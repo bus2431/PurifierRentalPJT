@@ -159,20 +159,19 @@
 ### 수정된 2차 모형
 ![2ndDesign](https://user-images.githubusercontent.com/81946287/118765229-bc240280-b8b5-11eb-8bf4-2015470e7987.png)
 
-    - 시나리오 내용을 매끄럽게 반영하기 위해 '서비스관리센터'를 '배정' 으로 변경
-    - 가입신청과 동시에 자동 배정되는 요구사항에 따라 Manager 액터가 불필요하여 제거
-    - 고객이 실시간 상태 확인을 위한 View 모델 배치
+    - Management 마이크로서비스를 추가하여 설계
+    - 매니저가 설문결과 확인을 위한 View 모델 배치
+    
+### (개인과제) Management 서비스 추가된 모형
+![Design1](https://user-images.githubusercontent.com/81946287/120515377-381b6000-c409-11eb-8f41-d0e59710f7e6.png)
 
 
-### 2차 완성본에 대한 기능적/비기능적 요구사항을 커버하는지 검증
-#### 시나리오 Coverage Check (1)
-![1stReview](https://user-images.githubusercontent.com/81946287/118766395-546eb700-b8b7-11eb-8330-a26f30c69072.png)
-
-#### 시나리오 Coverage Check (2)
-![2ndReview](https://user-images.githubusercontent.com/81946287/118766439-62243c80-b8b7-11eb-825d-9fcc9635607c.png)
+### 서비스 추가된 완성본에 대한 기능적/비기능적 요구사항을 커버하는지 검증
+#### 시나리오 Coverage Check
+![Design2](https://user-images.githubusercontent.com/81946287/120515504-53866b00-c409-11eb-9f8c-fba5ab6c9128.png)
 
 #### 비기능 요구사항 coverage
-![3rdReview](https://user-images.githubusercontent.com/81946287/118766471-6cded180-b8b7-11eb-9c00-dcaec093281c.png)
+![Design3](https://user-images.githubusercontent.com/81946287/120515538-5c773c80-c409-11eb-9608-a7eec8775338.png)
 
 
 
@@ -190,7 +189,7 @@
 
 
 # 구현:
-분석/설계 단계에서 도출된 헥사고날 아키텍처에 따라, 각 BC별로 대변되는 마이크로 서비스들을 스프링부트로 구현하였다. 구현한 각 서비스를 로컬에서 실행하는 방법은 아래와 같다 (각자의 포트넘버는 8081 ~ 8083 이다)
+분석/설계 단계에서 도출된 헥사고날 아키텍처에 따라, 각 BC별로 대변되는 마이크로 서비스들을 스프링부트로 구현하였다. 구현한 각 서비스를 로컬에서 실행하는 방법은 아래와 같다 (각자의 포트넘버는 8081 ~ 8084 이다)
 
 ```
 - Local
@@ -202,6 +201,9 @@
 
 	cd Installation
 	mvn spring-boot:run
+	
+	cd Management
+	mvn spring-boot:run
 
 
 - EKS : CI/CD 통해 빌드/배포 ("운영 > CI-CD 설정" 부분 참조)
@@ -209,61 +211,51 @@
 
 ## DDD 의 적용
 
-- 각 서비스내에 도출된 핵심 Aggregate Root 객체를 Entity 로 선언하였다: Order, Assignment, Installation
-- Assignment(배정) 마이크로서비스 예시
+- 각 서비스내에 도출된 핵심 Aggregate Root 객체를 Entity 로 선언하였다: Order, Assignment, Installation, Management
+- Management(고객관리) 마이크로서비스 예시
 
 ```
 	package purifierrentalpjt;
 
-	import javax.persistence.*;
-	import org.springframework.beans.BeanUtils;
-	
-	import lombok.Getter;
-	import lombok.Setter;
-	
-	import java.util.List;
-	import java.util.Date;
+import javax.persistence.*;
+import org.springframework.beans.BeanUtils;
+import java.util.List;
+import java.util.Date;
 
-	@Entity
-	@Getter
-	@Setter
-	@Table(name="Assignment_table")
-	public class Assignment {
-		
-		@Id
-    		@GeneratedValue(strategy=GenerationType.AUTO)
-    		private Long id;
-    		private Long orderId;
-    		private String installationAddress;
-    		private Long engineerId;
-    		private String engineerName;
-    		private String status;
+@Entity
+@Table(name="Management_table")
+public class Management {
 
-    		@PostPersist
-    		public void onPostPersist(){
-        
-        		System.out.println(this.getStatus() + "POST TEST");
-        
-        		if(this.getStatus().equals("orderRequest")) {
+    @Id
+    @GeneratedValue(strategy=GenerationType.AUTO)
+    private Long id;
+    private Long orderId;
+    private Long surveyId;
+    private Long customerId;
+    private String status;
+    private String surveyResult;
 
-            		  EngineerAssigned engineerAssigned = new EngineerAssigned();
+    @PostPersist
+    public void onPostPersist(){
 
-            		  engineerAssigned.setId(this.getId()); 
-            		  engineerAssigned.setOrderId(this.getId()); 
-            		  engineerAssigned.setInstallationAddress(this.getInstallationAddress()); 
-            		  engineerAssigned.setEngineerId(this.getEngineerId()); 
-            		  engineerAssigned.setEngineerName(this.getEngineerName()); 
-            
-            		  BeanUtils.copyProperties(this, engineerAssigned);
-            		  engineerAssigned.publishAfterCommit();
+        System.out.println("=================>>>>" + this.getStatus() + "POST TEST");
 
-        		} else if (this.getStatus().equals("installationComplete")) {
+        SurveyCompleted surveyCompleted = new SurveyCompleted();
 
-            		  JoinCompleted joinCompleted = new JoinCompleted();
+        surveyCompleted.setId(this.getId());
+        surveyCompleted.setOrderId(this.orderId);
+        surveyCompleted.setStatus(this.getStatus()); 
+        BeanUtils.copyProperties(this, surveyCompleted);
+        surveyCompleted.publishAfterCommit();
 
-            		  joinCompleted.setId(this.getId()); 
-            		  joinCompleted.setOrderId(this.orderId); 
-            		  joinCompleted.setStatus(this.getStatus());
+
+    }
+
+
+    public Long getId() {
+        return id;
+    }
+
 ```
 
 적용 후 REST API의 테스트
