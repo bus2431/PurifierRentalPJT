@@ -347,50 +347,64 @@ spring:
 
 ## 비동기식 호출 / 시간적 디커플링 / 장애격리 / 최종 (Eventual) 일관성 테스트
 
-가입 신청(order)이 이루어진 후에 배정(Assignment) 서비스로 이를 알려주는 행위는 비동기식으로 처리하여, 배정(Assignment) 서비스의 처리를 위하여 가입신청(order)이 블로킹 되지 않도록 처리한다.
+설문완료(Management)가 이루어진 후에 주문(Order) 서비스로 이를 알려주는 행위는 비동기식으로 처리하였다.
  
-- 이를 위하여 가입 신청에 기록을 남긴 후에 곧바로 가입 신청이 되었다는 도메인 이벤트를 카프카로 송출한다.(Publish)
+- 이를 위하여 설문완료 후 곧바로 설문조사가 완료되었다는 도메인 이벤트를 카프카로 송출한다.(Publish)
 ```
-# (order) Order.java
+# (Management) Management.java
 
     @PostPersist
     public void onPostPersist(){
 
-        JoinOrdered joinOrdered = new JoinOrdered();
-        BeanUtils.copyProperties(this, joinOrdered);
-        joinOrdered.publishAfterCommit();
+        System.out.println("=================>>>>" + this.getStatus() + "POST TEST");
+
+        SurveyCompleted surveyCompleted = new SurveyCompleted();
+
+        surveyCompleted.setId(this.getId());
+        surveyCompleted.setOrderId(this.orderId);
+        surveyCompleted.setStatus(this.getStatus()); 
+        surveyCompleted.setSurveyResult(this.getSurveyResult());
+        BeanUtils.copyProperties(this, surveyCompleted);
+        surveyCompleted.publishAfterCommit();
+
+
     }
 ```
-- 배정 서비스에서는 가입신청 이벤트에 대해서 이를 수신하여 자신의 정책을 처리하도록 PolicyHandler 를 구현한다.
+- 주문 서비스에서는 설문 완료 이벤트에 대해서 이를 수신하여 자신의 정책을 처리하도록 PolicyHandler 를 구현한다.
 ```
-# (Assignment) PolicyHandler.java
+# (Order) PolicyHandler.java
 
 @Service
 public class PolicyHandler{
-    @Autowired AssignmentRepository assignmentRepository;
+    @Autowired OrderRepository orderRepository;
 
+    /**
+     * 설문이 완료됬을때 처리
+     * @param surveyCompleted
+     */
     @StreamListener(KafkaProcessor.INPUT)
-    public void wheneverJoinOrdered_OrderRequest(@Payload JoinOrdered joinOrdered){
+    public void wheneverSurveyCompleted_SurveyCompletionNotify(@Payload SurveyCompleted surveyCompleted){
 
-        if(!joinOrdered.validate()) return;
+        if(!surveyCompleted.validate()) return;
 
-        System.out.println("\n\n##### listener OrderRequest : " + joinOrdered.toJson() + "\n\n");
+        System.out.println("\n\n##### listener SurveyCompletionNotify : " + surveyCompleted.toJson() + "\n\n");
 
-        Assignment assignment = new Assignment();
-
-        assignment.setId(joinOrdered.getId());
-        assignment.setInstallationAddress(joinOrdered.getInstallationAddress());
-        assignment.setStatus("orderRequest");
-        assignment.setEngineerName("Enginner" + joinOrdered.getId());
-        assignment.setEngineerId(joinOrdered.getId());
-        assignment.setOrderId(joinOrdered.getId());
-
-        assignmentRepository.save(assignment);
+        try {
+            orderRepository.findById(surveyCompleted.getOrderId()).ifPresent(
+                order -> {
+                    order.setStatus("surveyComplete");
+                    order.setSurveyResult(surveyCompleted.getSurveyResult());
+                    orderRepository.save(order);
+            });
+        } catch(Exception e) {
+            e.printStackTrace();
         }
+            
     }
 }
 ```
-가입신청은 배정 서비스와 완전히 분리되어 있으며, 이벤트 수신에 따라 처리되기 때문에, 배정 서비스가 유지보수로 인해 잠시 내려간 상태라도 가입신청을 받는데 문제가 없다.
+관리의 설문완료는 주문 서비스와 완전히 분리되어 있으며, 이벤트 수신에 따라 처리되기 때문에, 주문 서비스가 유지보수로 인해 잠시 내려간 상태라도 
+설문완료 처리를 하는데 문제가 없다.
 
 
 ## CQRS
@@ -428,18 +442,22 @@ spring:
   cloud:
     gateway:
       routes:
-        - id: Order
+        - id: order
           uri: http://localhost:8081
           predicates:
-            - Path=/orders/**,/order/**,/orderStatuses/**
-        - id: Assignment
+            - Path=/order/**,/orders/**,/orderStatuses/**
+        - id: assignment
           uri: http://localhost:8082
           predicates:
-            - Path=/assignments/**,/assignment/** 
-        - id: Installation
+            - Path=/assignments/**,/assignment/**  
+        - id: installation
           uri: http://localhost:8083
           predicates:
-            - Path=/installations/**,/installation/** 
+            - Path=/installations/**,/installation/**
+        - id: management
+          uri: http://localhost:8084
+          predicates:
+            - Path=/managements/**,/management/**
       globalcors:
         corsConfigurations:
           '[/**]':
