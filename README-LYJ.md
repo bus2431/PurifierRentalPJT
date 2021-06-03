@@ -494,7 +494,7 @@ $ kubectl apply -f service.yaml
 ```
 
 ##### 배포 결과
-![image](https://user-images.githubusercontent.com/76420081/119082405-fa95fa80-ba38-11eb-8ad5-c7cd5b4f736a.png)
+![배포결과](https://user-images.githubusercontent.com/81946287/120602799-570c0780-c486-11eb-932c-f6577eb6ee65.png)
 
 ## 동기식 호출 / 서킷 브레이킹 / 장애격리
 
@@ -504,10 +504,7 @@ $ kubectl apply -f service.yaml
 
 - istio 설치
 
-
-![image](https://user-images.githubusercontent.com/76420081/119083009-2665b000-ba3a-11eb-8a43-aeb9b7e7db98.png)
-
-![image](https://user-images.githubusercontent.com/76420081/119083153-6331a700-ba3a-11eb-9543-475bb812c176.png)
+![istio](https://user-images.githubusercontent.com/81946287/120603043-8fabe100-c486-11eb-9141-c60371128868.png)
 
 ![image](https://user-images.githubusercontent.com/76420081/119083538-1b5f4f80-ba3b-11eb-952d-89e7d7adec23.png)
 http://acdf28d4a2a744330ad8f7db4e05aeac-1896393867.ap-southeast-2.elb.amazonaws.com:20001/
