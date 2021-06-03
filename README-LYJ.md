@@ -602,26 +602,44 @@ pod의 container가 정상적으로 기동되는지 확인하여, 비정상 상�
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
-...
+metadata:
+  name: order
+  labels:
+    app: order
+spec:
+````
     spec:
       containers:
         - name: order
-          image: 740569282574.dkr.ecr.ap-southeast-2.amazonaws.com/puri-order:v3
+          image: 879772956301.dkr.ecr.ap-southeast-1.amazonaws.com/puri12-order:v1
           args:
           - /bin/sh
           - -c
           - touch /tmp/healthy; sleep 10; rm -rf /tmp/healthy; sleep 600;
-...
-          livenessProbe:
+          ports:
+            - containerPort: 8080
+          readinessProbe:
             httpGet:
               path: '/actuator/health'
               port: 8080
+            initialDelaySeconds: 10
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 10
+          livenessProbe:
+            exec:
+              command:
+              - cat
+              - /tmp/healthy
             initialDelaySeconds: 3
             timeoutSeconds: 2
             periodSeconds: 5
             failureThreshold: 5
 ```
 
+
+- 확인 : kubectl get pods -w
+![liveness](https://user-images.githubusercontent.com/81946287/120645682-aae11580-c4b3-11eb-94ba-1c757381e429.png)
 
 
 ### 오토스케일 아웃
