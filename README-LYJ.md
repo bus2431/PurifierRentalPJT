@@ -316,43 +316,34 @@ spring:
 	}
 ```
 
-정수기 렌탈 서비스 가입 취소 요청(cancelRequest)을 받은 후, 처리하는 부분
+설문이 제출되면(@PostUpdate) 설문 완료 처리가 되도록 처리
 ```
-# (Management) ManagementController.java
+# (Order) Order.java
 
-	package purifierrentalpjt;
+    @PostUpdate
+    public void onPostUpdate(){
+        /* 설문조사 */
+    	System.out.println("### 설문 상태 Update and Update Event raised..." + this.getStatus());
+        if(this.getStatus().equals("surveySubmit")) {
+            SurveySubmitted surveySubmitted = new SurveySubmitted();
+            BeanUtils.copyProperties(this, surveySubmitted);
+            surveySubmitted.publishAfterCommit();
 
-	/**
- 	* Management Command
- 	* @author Administrator
- 	*
- 	*/
- 	@RestController
- 	public class ManagementController {
+            purifierrentalpjt.external.Management management = new purifierrentalpjt.external.Management();
 
-    	  @Autowired
-    	  ManagementRepository managementRepository;
+            management.setId(this.getId());
 
-    	  /**
-     	  * 설문 완료
-     	  * @param management
-     	  */
-    	@RequestMapping(method=RequestMethod.POST, path="/management")
-    	public void surveyCompletion(@RequestBody Management management) {
-    	
-    	  System.out.println( "### 동기호출 -설문완료");
+            OrderApplication.applicationContext.getBean(purifierrentalpjt.external.ManagementService.class)
+            .completeSurvey(management);
+        }
 
-    	  Optional<Management> opt = managementRepository.findByOrderId(management.getOrderId());
-    	  if( opt.isPresent()) {
-    		Management surveyComplete =opt.get();
-    		surveyComplete.setStatus("surveyCompleted");
-    		managementRepository.save(surveyComplete);
-    	  } else {
-    		System.out.println("### 설문 - 못찾음");
-    	  }
-       }
+
+    }
    
 ```
+
+동기식 호출에서는 호출 시간에 따른 타입 커플링이 발생하며, 관리(Management) 서비스가 장애가 나면 설문이 제출되지 않는다는 것을 확인
+![동기호출](https://user-images.githubusercontent.com/81946287/120578039-2022fb00-c460-11eb-8156-dc6aaed13bf4.png)
 
 ## 비동기식 호출 / 시간적 디커플링 / 장애격리 / 최종 (Eventual) 일관성 테스트
 
