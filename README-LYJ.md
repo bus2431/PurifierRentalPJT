@@ -1,6 +1,6 @@
 # PurifierRentalPJT
 21년 1차수 3조 개인과제
-# PurifierRentalProject (정수기렌탈 서비스)
+# PurifierRentalProject (정수기렌탈 서비스 - 개인)
 
 3조 정수기 렌탈 신청 서비스 프로젝트 - 개인 과제 입니다.
 
