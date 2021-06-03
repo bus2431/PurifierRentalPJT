@@ -114,6 +114,38 @@ public class OrderController {
 		
 		return status;
 	}
+
+	/**
+	 * 설문제출
+	 * @param id
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/order/submitSurvey", method = RequestMethod.PATCH, produces = "application/json;charset=UTF-8")
+	public boolean submitSurvey(
+		@RequestParam("orderId") Long id,
+		@RequestParam("surveyResult")  			String 	surveyResult ) throws Exception {
+		
+		// init
+		System.out.println("##### /order/submitSurvey  called #####");
+		boolean status = false;
+
+		// 설문요청 시 처리
+		Optional<Order> opt =orderRepository.findById(id);
+		if( opt.isPresent()) {
+			Order surveySubmit =opt.get();
+			surveySubmit.setStatus("surveySubmit");
+			surveySubmit.setSurveyResult(surveyResult);
+			orderRepository.save(surveySubmit);
+			
+			status = true;
+		
+		} else {
+			System.out.println("## 설문대상이 아닙니다.");
+		}
+		
+		return status;
+	}
 	
 	/**
 	 * 오늘날짜 구하기

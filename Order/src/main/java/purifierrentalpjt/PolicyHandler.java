@@ -3,6 +3,8 @@ package purifierrentalpjt;
 import purifierrentalpjt.config.kafka.KafkaProcessor;
 import purifierrentalpjt.event.JoinCompleted;
 import purifierrentalpjt.event.OrderCancelAccepted;
+import purifierrentalpjt.event.SurveySubmitted;
+import purifierrentalpjt.event.SurveyCompleted;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,6 +51,26 @@ public class PolicyHandler{
         // Sample Logic //
         Order order = new Order();
         orderRepository.save(order);
+            
+    }
+
+    @StreamListener(KafkaProcessor.INPUT)
+    public void wheneverSurveyCompleted_SurveyCompletionNotify(@Payload SurveyCompleted surveyCompleted){
+
+        if(!surveyCompleted.validate()) return;
+
+        System.out.println("\n\n##### listener SurveyCompletionNotify : " + surveyCompleted.toJson() + "\n\n");
+
+        try {
+            orderRepository.findById(surveyCompleted.getOrderId()).ifPresent(
+                order -> {
+                    order.setStatus("surveyComplete");
+                    order.setSurveyResult(surveyCompleted.getSurveyResult());
+                    orderRepository.save(order);
+            });
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
             
     }
 

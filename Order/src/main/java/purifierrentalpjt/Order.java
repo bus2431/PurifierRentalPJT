@@ -17,6 +17,7 @@ import lombok.Setter;
 import purifierrentalpjt.event.CancelOrdered;
 import purifierrentalpjt.event.JoinOrdered;
 import purifierrentalpjt.event.OrderCanceled;
+import purifierrentalpjt.event.SurveySubmitted;
 
 /**
  * 주문
@@ -38,6 +39,8 @@ public class Order {
     private String productName;
     private String installationAddress;
     private Long customerId;
+    private Long orderId;
+    private String surveyResult;
     private String orderDate;
 
     /**
@@ -55,6 +58,27 @@ public class Order {
         BeanUtils.copyProperties(this, joinOrdered);
         joinOrdered.publishAfterCommit();
 
+
+    }
+
+    @PostUpdate
+    public void onPostUpdate(){
+        /* 설문조사 */
+    	System.out.println("### 설문 상태 Update and Update Event raised..." + this.getStatus());
+        if(this.getStatus().equals("surveySubmit")) {
+            SurveySubmitted surveySubmitted = new SurveySubmitted();
+            BeanUtils.copyProperties(this, surveySubmitted);
+            surveySubmitted.publishAfterCommit();
+
+            purifierrentalpjt.external.Management management = new purifierrentalpjt.external.Management();
+
+            management.setId(this.getId());
+
+            OrderApplication.applicationContext.getBean(purifierrentalpjt.external.ManagementService.class)
+            .completeSurvey(management);
+        }
+
+
     }
     
     /**
@@ -67,12 +91,5 @@ public class Order {
     	cancelOrdered.publishAfterCommit();
     }
 
-    /**
-     * 주문변경시, 이벤트발생
-     */
-    @PostUpdate
-    public void onPostUpdate(){
-      
-    }
 
 }

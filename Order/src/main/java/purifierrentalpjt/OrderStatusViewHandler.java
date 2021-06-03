@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import purifierrentalpjt.config.kafka.KafkaProcessor;
 import purifierrentalpjt.event.JoinCompleted;
 import purifierrentalpjt.event.OrderCanceled;
+import purifierrentalpjt.event.SurveySubmitted;
+import purifierrentalpjt.event.SurveyCompleted;
 
 /**
  * 주문상태 View핸들러
@@ -54,6 +56,29 @@ public class OrderStatusViewHandler {
 	        	OrderStatus orderStatus = new OrderStatus();
 	            orderStatus.setId		(	orderCanceled.getId());
 	            orderStatus.setStatus	(	orderCanceled.getStatus());
+	            orderStatusRepository.save(orderStatus);
+        	}
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
+    /**
+     * 설문완료시
+     * @param surveyCompleted
+     */
+    @StreamListener(KafkaProcessor.INPUT)
+    public void when_surveyCompletionNotify (@Payload SurveyCompleted surveyCompleted) {
+    	System.out.println("###OrderStatusViewHandler- 설문완료시");
+    	
+        try {
+        	if( surveyCompleted.isMe()) {
+	        	// view 객체 생성
+	        	OrderStatus orderStatus = new OrderStatus();
+	            orderStatus.setId		    (	surveyCompleted.getId());
+	            orderStatus.setStatus	    (	surveyCompleted.getStatus());
+                orderStatus.setSurveyResult	(	surveyCompleted.getSurveyResult());
 	            orderStatusRepository.save(orderStatus);
         	}
         }catch (Exception e){

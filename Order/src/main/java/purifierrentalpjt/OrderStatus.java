@@ -19,4 +19,5 @@ public class OrderStatus {
     @Id
     private Long id;
     private String status;	// 상태정보
+    private String surveyResult;	// 설문결과
 }
