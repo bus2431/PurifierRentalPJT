@@ -400,25 +400,20 @@ public class PolicyHandler{
 - 모든 정보는 비동기 방식으로 발행된 이벤트를 수신하여 처리된다.
 - 설계 : MSAEz 설계의 view 매핑 설정 참조
 
-- 설문
+- 설문 제출
 
-![image](https://user-images.githubusercontent.com/76420081/119001165-b23df480-b9c6-11eb-9d62-bed7406f0709.png)
-
-- 카프카 메시지
-
-![image](https://user-images.githubusercontent.com/76420081/119001370-df8aa280-b9c6-11eb-867f-fbd78ab89031.png)
-
-- 주문취소
-
-![image](https://user-images.githubusercontent.com/76420081/119001667-25476b00-b9c7-11eb-8609-c6a7e9a02dfe.png)
+![설문](https://user-images.githubusercontent.com/81946287/120587902-2d94b100-c471-11eb-9647-4a27811fdccb.png)
 
 - 카프카 메시지
 
-![image](https://user-images.githubusercontent.com/76420081/119001720-32645a00-b9c7-11eb-81aa-58191e7bef1d.png)
+![설문_kafka](https://user-images.githubusercontent.com/81946287/120587906-2ff70b00-c471-11eb-92ac-274ea581b944.png)
+
 
 - 뷰테이블 수신처리
 
-![image](https://user-images.githubusercontent.com/76420081/119002598-fa114b80-b9c7-11eb-9aac-ed6ac136be4c.png)
+![ViewHandler](https://user-images.githubusercontent.com/81946287/120587912-32596500-c471-11eb-8f64-1ee819ddfc25.png)
+
+![ViewHandler2](https://user-images.githubusercontent.com/81946287/120587921-35545580-c471-11eb-86c2-741a5ae8455e.png)
 
 
 ## API Gateway
