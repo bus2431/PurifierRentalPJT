@@ -1,6 +1,6 @@
 # PurifierRentalPJT
 21년 1차수 3조 개인과제
-# PurifierRentalProject (정수기렌탈 서비스-개인)
+# PurifierRentalProject (정수기렌탈 서비스 - 개인)
 
 3조 정수기 렌탈 신청 서비스 프로젝트 - 개인 과제 입니다.
 
@@ -38,20 +38,22 @@
 1. 고객은 설치진행상태를 수시로 확인할 수 있다.
 
 (개인과제) 기능적 요구사항 추가
-1. 가입신청이 완료되면 고객이 만족도 응답을 진행한다.(설문조사는 Req/Res 테스트를 위해 임의로 동기처리)
-2. 설문결과는 매니저가 수시로 확인할 수 있다.
+1. 가입신청이 완료되면 고객이 만족도 응답을 할 수 있다.
+2. 설문이 제출되면 설문이 종료된다.(설문종료 처리는 Req/Res 테스트를 위해 임의로 동기처리)
+3. 설문완료된 상태값과 설문결과를 고객이 수시로 확인할 수 있다.
 
 비기능적 요구사항
 1. 트랜잭션
     1. 가입취소 신청은 설치취소가 동시 이루어 지도록 한다
-    2. (개인과제 추가)설문조사는 가입신청 완료와 동시에 이루어지도록 한다.
+    2. (개인과제 추가)설문 종료는 설문 제출과 동시에 이루어지도록 한다.
     
 1. 장애격리
     1. 정수기 렌탈 가입신청과 취소는 고객서비스 담당자의 접수, 설치 처리와 관계없이 항상 처리 가능하다. 
+    2. 가입처리는 설문관리와 관계없이 항상 처리 가능하다.
 
 1. 성능
     1. 고객은 주문/설치 진행상태를 수시로 확인한다.(CQRS)
-    2. (개인과제 추가)매니저는 설문결과를 수시로 확인한다.(CQRS)
+    2. (개인과제 추가)고객은 설문결과도 수시로 확인한다.(CQRS)
 
 
 
@@ -157,20 +159,19 @@
 ### 수정된 2차 모형
 ![2ndDesign](https://user-images.githubusercontent.com/81946287/118765229-bc240280-b8b5-11eb-8bf4-2015470e7987.png)
 
-    - 시나리오 내용을 매끄럽게 반영하기 위해 '서비스관리센터'를 '배정' 으로 변경
-    - 가입신청과 동시에 자동 배정되는 요구사항에 따라 Manager 액터가 불필요하여 제거
-    - 고객이 실시간 상태 확인을 위한 View 모델 배치
+    - Management 마이크로서비스를 추가하여 설계
+    - 매니저가 설문결과 확인을 위한 View 모델 배치
+    
+### (개인과제) Management 서비스 추가된 모형
+![Design4](https://user-images.githubusercontent.com/81946287/120586121-e8bb4b00-c46d-11eb-98d5-6e7f4379d80c.png)
 
 
-### 2차 완성본에 대한 기능적/비기능적 요구사항을 커버하는지 검증
-#### 시나리오 Coverage Check (1)
-![1stReview](https://user-images.githubusercontent.com/81946287/118766395-546eb700-b8b7-11eb-8330-a26f30c69072.png)
-
-#### 시나리오 Coverage Check (2)
-![2ndReview](https://user-images.githubusercontent.com/81946287/118766439-62243c80-b8b7-11eb-825d-9fcc9635607c.png)
+### 서비스 추가된 완성본에 대한 기능적/비기능적 요구사항을 커버하는지 검증
+#### 시나리오 Coverage Check
+![Design5](https://user-images.githubusercontent.com/81946287/120586138-ef49c280-c46d-11eb-9090-286e222c6e37.png)
 
 #### 비기능 요구사항 coverage
-![3rdReview](https://user-images.githubusercontent.com/81946287/118766471-6cded180-b8b7-11eb-9c00-dcaec093281c.png)
+![Design6](https://user-images.githubusercontent.com/81946287/120586148-f1ac1c80-c46d-11eb-8761-58239468c0ee.png)
 
 
 
@@ -188,7 +189,7 @@
 
 
 # 구현:
-분석/설계 단계에서 도출된 헥사고날 아키텍처에 따라, 각 BC별로 대변되는 마이크로 서비스들을 스프링부트로 구현하였다. 구현한 각 서비스를 로컬에서 실행하는 방법은 아래와 같다 (각자의 포트넘버는 8081 ~ 8083 이다)
+분석/설계 단계에서 도출된 헥사고날 아키텍처에 따라, 각 BC별로 대변되는 마이크로 서비스들을 스프링부트로 구현하였다. 구현한 각 서비스를 로컬에서 실행하는 방법은 아래와 같다 (각자의 포트넘버는 8081 ~ 8084 이다)
 
 ```
 - Local
@@ -200,6 +201,9 @@
 
 	cd Installation
 	mvn spring-boot:run
+	
+	cd Management
+	mvn spring-boot:run
 
 
 - EKS : CI/CD 통해 빌드/배포 ("운영 > CI-CD 설정" 부분 참조)
@@ -207,75 +211,65 @@
 
 ## DDD 의 적용
 
-- 각 서비스내에 도출된 핵심 Aggregate Root 객체를 Entity 로 선언하였다: Order, Assignment, Installation
-- Assignment(배정) 마이크로서비스 예시
+- 각 서비스내에 도출된 핵심 Aggregate Root 객체를 Entity 로 선언하였다: Order, Assignment, Installation, Management
+- Management(고객관리) 마이크로서비스 예시
 
 ```
-	package purifierrentalpjt;
+package purifierrentalpjt;
 
-	import javax.persistence.*;
-	import org.springframework.beans.BeanUtils;
-	
-	import lombok.Getter;
-	import lombok.Setter;
-	
-	import java.util.List;
-	import java.util.Date;
+import javax.persistence.*;
+import org.springframework.beans.BeanUtils;
+import java.util.List;
+import java.util.Date;
 
-	@Entity
-	@Getter
-	@Setter
-	@Table(name="Assignment_table")
-	public class Assignment {
-		
-		@Id
-    		@GeneratedValue(strategy=GenerationType.AUTO)
-    		private Long id;
-    		private Long orderId;
-    		private String installationAddress;
-    		private Long engineerId;
-    		private String engineerName;
-    		private String status;
+@Entity
+@Table(name="Management_table")
+public class Management {
 
-    		@PostPersist
-    		public void onPostPersist(){
-        
-        		System.out.println(this.getStatus() + "POST TEST");
-        
-        		if(this.getStatus().equals("orderRequest")) {
+    @Id
+    @GeneratedValue(strategy=GenerationType.AUTO)
+    private Long id;
+    private Long orderId;
+    private Long surveyId;
+    private Long customerId;
+    private String status;
+    private String surveyResult;
 
-            		  EngineerAssigned engineerAssigned = new EngineerAssigned();
+    @PostPersist
+    public void onPostPersist(){
 
-            		  engineerAssigned.setId(this.getId()); 
-            		  engineerAssigned.setOrderId(this.getId()); 
-            		  engineerAssigned.setInstallationAddress(this.getInstallationAddress()); 
-            		  engineerAssigned.setEngineerId(this.getEngineerId()); 
-            		  engineerAssigned.setEngineerName(this.getEngineerName()); 
-            
-            		  BeanUtils.copyProperties(this, engineerAssigned);
-            		  engineerAssigned.publishAfterCommit();
+        System.out.println("=================>>>>" + this.getStatus() + "POST TEST");
 
-        		} else if (this.getStatus().equals("installationComplete")) {
+        SurveyCompleted surveyCompleted = new SurveyCompleted();
 
-            		  JoinCompleted joinCompleted = new JoinCompleted();
+        surveyCompleted.setId(this.getId());
+        surveyCompleted.setOrderId(this.orderId);
+        surveyCompleted.setStatus(this.getStatus()); 
+        BeanUtils.copyProperties(this, surveyCompleted);
+        surveyCompleted.publishAfterCommit();
 
-            		  joinCompleted.setId(this.getId()); 
-            		  joinCompleted.setOrderId(this.orderId); 
-            		  joinCompleted.setStatus(this.getStatus());
+
+    }
+
+
+    public Long getId() {
+        return id;
+    }
+
 ```
 
 적용 후 REST API의 테스트
-1) 정수기 렌탈 서비스 신청 & 설치완료 처리
+1) 정수기 렌탈 서비스 가입완료 후 설문조사 처리
 
-- (a) http -f POST localhost:8081/order/joinOrder productId=4 productName=PURI6 installationAddress="addr#6" customerId=506
-- (b) http -f PATCH http://localhost:8083/installations orderId=5 
-![image](https://user-images.githubusercontent.com/76420081/118930671-00c8a000-b981-11eb-9af5-3619d4ceaedd.png)
+- (a) http -f POST  http://localhost:8081/order/joinOrder productId=1 productName=PURI1 installationAddress="Addr1" customerId=101
+- (b) http -f PATCH http://localhost:8083/installations orderId=1 
+- (c) http -f PATCH http://localhost:8081/order/submitSurvey orderId=1 surveyResult="GOOD"
+![Survey_command](https://user-images.githubusercontent.com/81946287/120572864-a7b83c00-c457-11eb-8254-6237c680da5e.png)
 
 2) 카프카 메시지 확인
 
-- (a) 서비스 신청 후 : JoinOrdered -> EngineerAssigned -> InstallationAccepted
-- (b) 설치완료 처리 후 : InstallationCompleted
-![image](https://user-images.githubusercontent.com/76420081/118930569-df67b400-b980-11eb-8ad2-66e33a3a5993.png)
+- (a) 설문조사 제출 후 : surveySubmit
+![Survey_kafka](https://user-images.githubusercontent.com/81946287/120572892-b56dc180-c457-11eb-990f-49f8578e9994.png)
 
 
 ## 폴리글랏 퍼시스턴스
@@ -295,144 +289,145 @@ spring:
 
 ## 동기식 호출 과 Fallback 처리
 
-- 분석 단계에서의 조건 중 하나로 배정(Assignment) 서비스에서 인터넷 가입신청 취소를 요청 받으면, 
-설치(installation) 서비스 취소 처리하는 부분을 동기식 호출하는 트랜잭션으로 처리하기로 하였다. 
+- 분석 단계에서의 조건 중 하나로 주문(Order) 서비스에서 설문 제출 요청 받으면, 
+관리(management) 서비스 설문종료 처리하는 부분을 동기식 호출하는 트랜잭션으로 처리하기로 하였다. 
 - 호출 프로토콜은 이미 앞서 Rest Repository 에 의해 노출되어 있는 REST 서비스를 FeignClient 를 이용하여 호출하도록 한다.
 
-설치 서비스를 호출하기 위하여 Stub과 (FeignClient) 를 이용하여 Service 대행 인터페이스 (Proxy) 를 구현
+관리 서비스를 호출하기 위하여 Stub과 (FeignClient) 를 이용하여 Service 대행 인터페이스 (Proxy) 를 구현
 ```
-# (Assignment) InstallationService.java
+# (Order) ManagementService.java
 
 	package purifierrentalpjt.external;
-	
+
 	import org.springframework.cloud.openfeign.FeignClient;
 	import org.springframework.web.bind.annotation.RequestBody;
 	import org.springframework.web.bind.annotation.RequestMapping;
 	import org.springframework.web.bind.annotation.RequestMethod;
 
-	/**
- 	 * 설치subsystem 동기호출
- 	 * @author Administrator
- 	 * 아래 주소는 Gateway주소임
- 	*/
+	import java.util.Date;
 
+	@FeignClient(name="Management", url="http://localhost:8084")
+	//@FeignClient(name="Management", url="http://management:8080")
+	public interface ManagementService {
 
-	@FeignClient(name="Installation", url="http://installation:8080")
-	//@FeignClient(name="Installation", url="http://localhost:8083")
-	public interface InstallationService {
-
-		@RequestMapping(method= RequestMethod.POST, path="/installations")
-    		public void cancelInstallation(@RequestBody Installation installation);
+    		@RequestMapping(method= RequestMethod.POST, path="/managements")
+   		 public void completeSurvey(@RequestBody Management management);
 
 	}
 ```
 
-정수기 렌탈 서비스 가입 취소 요청(cancelRequest)을 받은 후, 처리하는 부분
+설문이 제출되면(@PostUpdate) 설문 완료 처리가 되도록 처리
 ```
-# (Installation) InstallationController.java
+# (Order) Order.java
 
-	package purifierrentalpjt;
+    @PostUpdate
+    public void onPostUpdate(){
+        /* 설문조사 */
+    	System.out.println("### 설문 상태 Update and Update Event raised..." + this.getStatus());
+        if(this.getStatus().equals("surveySubmit")) {
+            SurveySubmitted surveySubmitted = new SurveySubmitted();
+            BeanUtils.copyProperties(this, surveySubmitted);
+            surveySubmitted.publishAfterCommit();
 
-	@RestController
-	public class InstallationController {
+            purifierrentalpjt.external.Management management = new purifierrentalpjt.external.Management();
 
-    	  @Autowired
-    	  InstallationRepository installationRepository;
+            management.setId(this.getId());
 
-    	  /**
-     	   * 설치취소
-     	   * @param installation
-           */
-	  @RequestMapping(method=RequestMethod.POST, path="/installations")
-    	  public void installationCancellation(@RequestBody Installation installation) {
-    	
-    		System.out.println( "### 동기호출 -설치취소=" +ToStringBuilder.reflectionToString(installation) );
+            OrderApplication.applicationContext.getBean(purifierrentalpjt.external.ManagementService.class)
+            .completeSurvey(management);
+        }
 
-    		Optional<Installation> opt = installationRepository.findByOrderId(installation.getOrderId());
-    		if( opt.isPresent()) {
-    			Installation installationCancel =opt.get();
-    			installationCancel.setStatus("installationCanceled");
-    			installationRepository.save(installationCancel);
-    		} else {
-    			System.out.println("### 설치취소 - 못찾음");
-    		}
-    	}
+
+    }
+   
 ```
+
+동기식 호출에서는 호출 시간에 따른 타입 커플링이 발생하며, 관리(Management) 서비스가 장애가 나면 설문이 제출되지 않는다는 것을 확인
+![동기호출](https://user-images.githubusercontent.com/81946287/120578039-2022fb00-c460-11eb-8156-dc6aaed13bf4.png)
 
 ## 비동기식 호출 / 시간적 디커플링 / 장애격리 / 최종 (Eventual) 일관성 테스트
 
-가입 신청(order)이 이루어진 후에 배정(Assignment) 서비스로 이를 알려주는 행위는 비동기식으로 처리하여, 배정(Assignment) 서비스의 처리를 위하여 가입신청(order)이 블로킹 되지 않도록 처리한다.
+설문완료(Management)가 이루어진 후에 주문(Order) 서비스로 이를 알려주는 행위는 비동기식으로 처리하였다.
  
-- 이를 위하여 가입 신청에 기록을 남긴 후에 곧바로 가입 신청이 되었다는 도메인 이벤트를 카프카로 송출한다.(Publish)
+- 이를 위하여 설문완료 후 곧바로 설문조사가 완료되었다는 도메인 이벤트를 카프카로 송출한다.(Publish)
 ```
-# (order) Order.java
+# (Management) Management.java
 
     @PostPersist
     public void onPostPersist(){
 
-        JoinOrdered joinOrdered = new JoinOrdered();
-        BeanUtils.copyProperties(this, joinOrdered);
-        joinOrdered.publishAfterCommit();
+        System.out.println("=================>>>>" + this.getStatus() + "POST TEST");
+
+        SurveyCompleted surveyCompleted = new SurveyCompleted();
+
+        surveyCompleted.setId(this.getId());
+        surveyCompleted.setOrderId(this.orderId);
+        surveyCompleted.setStatus(this.getStatus()); 
+        surveyCompleted.setSurveyResult(this.getSurveyResult());
+        BeanUtils.copyProperties(this, surveyCompleted);
+        surveyCompleted.publishAfterCommit();
+
+
     }
 ```
-- 배정 서비스에서는 가입신청 이벤트에 대해서 이를 수신하여 자신의 정책을 처리하도록 PolicyHandler 를 구현한다.
+- 주문 서비스에서는 설문 완료 이벤트에 대해서 이를 수신하여 자신의 정책을 처리하도록 PolicyHandler 를 구현한다.
 ```
-# (Assignment) PolicyHandler.java
+# (Order) PolicyHandler.java
 
 @Service
 public class PolicyHandler{
-    @Autowired AssignmentRepository assignmentRepository;
+    @Autowired OrderRepository orderRepository;
 
+    /**
+     * 설문이 완료됬을때 처리
+     * @param surveyCompleted
+     */
     @StreamListener(KafkaProcessor.INPUT)
-    public void wheneverJoinOrdered_OrderRequest(@Payload JoinOrdered joinOrdered){
+    public void wheneverSurveyCompleted_SurveyCompletionNotify(@Payload SurveyCompleted surveyCompleted){
 
-        if(!joinOrdered.validate()) return;
+        if(!surveyCompleted.validate()) return;
 
-        System.out.println("\n\n##### listener OrderRequest : " + joinOrdered.toJson() + "\n\n");
+        System.out.println("\n\n##### listener SurveyCompletionNotify : " + surveyCompleted.toJson() + "\n\n");
 
-        Assignment assignment = new Assignment();
-
-        assignment.setId(joinOrdered.getId());
-        assignment.setInstallationAddress(joinOrdered.getInstallationAddress());
-        assignment.setStatus("orderRequest");
-        assignment.setEngineerName("Enginner" + joinOrdered.getId());
-        assignment.setEngineerId(joinOrdered.getId());
-        assignment.setOrderId(joinOrdered.getId());
-
-        assignmentRepository.save(assignment);
+        try {
+            orderRepository.findById(surveyCompleted.getOrderId()).ifPresent(
+                order -> {
+                    order.setStatus("surveyComplete");
+                    order.setSurveyResult(surveyCompleted.getSurveyResult());
+                    orderRepository.save(order);
+            });
+        } catch(Exception e) {
+            e.printStackTrace();
         }
+            
     }
 }
 ```
-가입신청은 배정 서비스와 완전히 분리되어 있으며, 이벤트 수신에 따라 처리되기 때문에, 배정 서비스가 유지보수로 인해 잠시 내려간 상태라도 가입신청을 받는데 문제가 없다.
+관리의 설문완료는 주문 서비스와 완전히 분리되어 있으며, 이벤트 수신에 따라 처리되기 때문에, 주문 서비스가 유지보수로 인해 잠시 내려간 상태라도 
+설문완료 처리를 하는데 문제가 없다.
 
 
 ## CQRS
 
-가입신청 상태 조회를 위한 서비스를 CQRS 패턴으로 구현하였다.
-- Order, Assignment, Installation 개별 aggregate 통합 조회로 인한 성능 저하를 막을 수 있다.
+가입신청+설문진행 상태 조회를 위한 서비스를 CQRS 패턴으로 구현하였다.
+- Order, Assignment, Installation, Management 개별 aggregate 통합 조회로 인한 성능 저하를 막을 수 있다.
 - 모든 정보는 비동기 방식으로 발행된 이벤트를 수신하여 처리된다.
 - 설계 : MSAEz 설계의 view 매핑 설정 참조
 
-- 주문생성
+- 설문 제출
 
-![image](https://user-images.githubusercontent.com/76420081/119001165-b23df480-b9c6-11eb-9d62-bed7406f0709.png)
-
-- 카프카 메시지
-
-![image](https://user-images.githubusercontent.com/76420081/119001370-df8aa280-b9c6-11eb-867f-fbd78ab89031.png)
-
-- 주문취소
-
-![image](https://user-images.githubusercontent.com/76420081/119001667-25476b00-b9c7-11eb-8609-c6a7e9a02dfe.png)
+![설문](https://user-images.githubusercontent.com/81946287/120587902-2d94b100-c471-11eb-9647-4a27811fdccb.png)
 
 - 카프카 메시지
 
-![image](https://user-images.githubusercontent.com/76420081/119001720-32645a00-b9c7-11eb-81aa-58191e7bef1d.png)
+![설문_kafka](https://user-images.githubusercontent.com/81946287/120587906-2ff70b00-c471-11eb-92ac-274ea581b944.png)
+
 
 - 뷰테이블 수신처리
 
-![image](https://user-images.githubusercontent.com/76420081/119002598-fa114b80-b9c7-11eb-9aac-ed6ac136be4c.png)
+![ViewHandler](https://user-images.githubusercontent.com/81946287/120587912-32596500-c471-11eb-8f64-1ee819ddfc25.png)
+
+![ViewHandler2](https://user-images.githubusercontent.com/81946287/120587921-35545580-c471-11eb-86c2-741a5ae8455e.png)
 
 
 ## API Gateway
@@ -447,18 +442,22 @@ spring:
   cloud:
     gateway:
       routes:
-        - id: Order
+        - id: order
           uri: http://localhost:8081
           predicates:
-            - Path=/orders/**,/order/**,/orderStatuses/**
-        - id: Assignment
+            - Path=/order/**,/orders/**,/orderStatuses/**
+        - id: assignment
           uri: http://localhost:8082
           predicates:
-            - Path=/assignments/**,/assignment/** 
-        - id: Installation
+            - Path=/assignments/**,/assignment/**  
+        - id: installation
           uri: http://localhost:8083
           predicates:
-            - Path=/installations/**,/installation/** 
+            - Path=/installations/**,/installation/**
+        - id: management
+          uri: http://localhost:8084
+          predicates:
+            - Path=/managements/**,/management/**
       globalcors:
         corsConfigurations:
           '[/**]':
