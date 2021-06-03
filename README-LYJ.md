@@ -215,7 +215,7 @@
 - Management(고객관리) 마이크로서비스 예시
 
 ```
-	package purifierrentalpjt;
+package purifierrentalpjt;
 
 import javax.persistence.*;
 import org.springframework.beans.BeanUtils;
@@ -259,17 +259,17 @@ public class Management {
 ```
 
 적용 후 REST API의 테스트
-1) 정수기 렌탈 서비스 신청 & 설치완료 처리
+1) 정수기 렌탈 서비스 가입완료 후 설문조사 처리
 
-- (a) http -f POST localhost:8081/order/joinOrder productId=4 productName=PURI6 installationAddress="addr#6" customerId=506
-- (b) http -f PATCH http://localhost:8083/installations orderId=5 
-![image](https://user-images.githubusercontent.com/76420081/118930671-00c8a000-b981-11eb-9af5-3619d4ceaedd.png)
+- (a) http -f POST  http://localhost:8081/order/joinOrder productId=1 productName=PURI1 installationAddress="Addr1" customerId=101
+- (b) http -f PATCH http://localhost:8083/installations orderId=1 
+- (c) http -f PATCH http://localhost:8081/order/submitSurvey orderId=1 surveyResult="GOOD"
+![Survey_command](https://user-images.githubusercontent.com/81946287/120572864-a7b83c00-c457-11eb-8254-6237c680da5e.png)
 
 2) 카프카 메시지 확인
 
-- (a) 서비스 신청 후 : JoinOrdered -> EngineerAssigned -> InstallationAccepted
-- (b) 설치완료 처리 후 : InstallationCompleted
-![image](https://user-images.githubusercontent.com/76420081/118930569-df67b400-b980-11eb-8ad2-66e33a3a5993.png)
+- (a) 설문조사 제출 후 : surveySubmit
+![Survey_kafka](https://user-images.githubusercontent.com/81946287/120572892-b56dc180-c457-11eb-990f-49f8578e9994.png)
 
 
 ## 폴리글랏 퍼시스턴스
