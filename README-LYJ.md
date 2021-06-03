@@ -626,9 +626,44 @@ kind: Deployment
 
 ### 오토스케일 아웃
 
-- 가입신청 서비스에 대한 replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 1프로를 넘어서면 replica 를 10개까지 늘려준다.
+- 주문 서비스에 대한 replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 1프로를 넘어서면 replica 를 10개까지 늘려준다.
+
 ```
 kubectl autoscale deploy order --min=1 --max=10 --cpu-percent=1
+```
+
+![autoscale](https://user-images.githubusercontent.com/81946287/120629728-14a3f400-c4a1-11eb-8347-0ed947dc5f0b.png)
+
+
+- (order)deployment.yml
+
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order
+  labels:
+    app: order
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order
+  template:
+    metadata:
+      labels:
+        app: order
+    spec:
+      containers:
+        - name: order
+          resources:
+            limits: 
+              cpu: 500m
+            requests:
+              cpu: 200m
+          image: 879772956301.dkr.ecr.ap-southeast-1.amazonaws.com/puri12-order:v1
+          ports:
+            - containerPort: 8080
 ```
 
 - 오토스케일이 어떻게 되고 있는지 모니터링을 걸어준다.
@@ -638,17 +673,18 @@ kubectl get deploy order -w
 kubectl get hpa order -w
 ```
 
-- 사용자 50명으로 워크로드를 3분 동안 걸어준다.
+- 사용자 2000명으로 워크로드를 3분이상 동안 걸어준다.
 ```
-siege -c50 -t180S  -v 'http://a39e59e8f1e324d23b5546d96364dc45-974312121.ap-southeast-2.elb.amazonaws.com:8080/order/joinOrder POST productId=4&productName=PURI4&installationAddress=Dongtan&customerId=504'
+siege -r 2000 -c 200 -v -v 'http://a0c43786b71d549d2a02a45758b87b82-1426910919.ap-southeast-1.elb.amazonaws.com:8080/order/submitSurvey PATCH orderId=1&surveyResult=GOOD'
 
 
 ```
 
-- 오토스케일 발생하지 않음(siege 실행 결과 오류 없이 수행됨 : Availability 100%)
-- 서비스에 복잡한 비즈니스 로직이 포함된 것이 아니어서, CPU 부하를 주지 못한 것으로 추정된다.
+- 메트릭스 서버 설치 후 부하 테스트 진행하니 오토스케일 발생한 것을 확인하였음
 
-![image](https://user-images.githubusercontent.com/76420081/119087445-1ce04600-ba42-11eb-92c8-2f0e2d772562.png)
+![autoscale3](https://user-images.githubusercontent.com/81946287/120631667-179fe400-c4a3-11eb-8004-013536c07f27.png)
+
+![autoscale5](https://user-images.githubusercontent.com/81946287/120631690-1b336b00-c4a3-11eb-81cc-94d4e1ad1bb5.png)
 
 
 ## 무정지 재배포
