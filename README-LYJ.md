@@ -40,7 +40,7 @@
 (개인과제) 기능적 요구사항 추가
 1. 가입신청이 완료되면 고객이 만족도 응답을 할 수 있다.
 2. 설문이 제출되면 설문이 종료된다.(설문종료 처리는 Req/Res 테스트를 위해 임의로 동기처리)
-3. 설문결과는 매니저가 수시로 확인할 수 있다.
+3. 설문완료된 상태값과 설문결과를 고객이 수시로 확인할 수 있다.
 
 비기능적 요구사항
 1. 트랜잭션
@@ -53,7 +53,7 @@
 
 1. 성능
     1. 고객은 주문/설치 진행상태를 수시로 확인한다.(CQRS)
-    2. (개인과제 추가)매니저는 설문결과를 수시로 확인한다.(CQRS)
+    2. (개인과제 추가)고객은 설문결과도 수시로 확인한다.(CQRS)
 
 
 
@@ -163,15 +163,15 @@
     - 매니저가 설문결과 확인을 위한 View 모델 배치
     
 ### (개인과제) Management 서비스 추가된 모형
-![Design1](https://user-images.githubusercontent.com/81946287/120515377-381b6000-c409-11eb-8f41-d0e59710f7e6.png)
+![Design4](https://user-images.githubusercontent.com/81946287/120586121-e8bb4b00-c46d-11eb-98d5-6e7f4379d80c.png)
 
 
 ### 서비스 추가된 완성본에 대한 기능적/비기능적 요구사항을 커버하는지 검증
 #### 시나리오 Coverage Check
-![Design2](https://user-images.githubusercontent.com/81946287/120515504-53866b00-c409-11eb-9f8c-fba5ab6c9128.png)
+![Design5](https://user-images.githubusercontent.com/81946287/120586138-ef49c280-c46d-11eb-9090-286e222c6e37.png)
 
 #### 비기능 요구사항 coverage
-![Design3](https://user-images.githubusercontent.com/81946287/120515538-5c773c80-c409-11eb-9608-a7eec8775338.png)
+![Design6](https://user-images.githubusercontent.com/81946287/120586148-f1ac1c80-c46d-11eb-8761-58239468c0ee.png)
 
 
 
@@ -395,12 +395,12 @@ public class PolicyHandler{
 
 ## CQRS
 
-가입신청 상태 조회를 위한 서비스를 CQRS 패턴으로 구현하였다.
-- Order, Assignment, Installation 개별 aggregate 통합 조회로 인한 성능 저하를 막을 수 있다.
+가입신청+설문진행 상태 조회를 위한 서비스를 CQRS 패턴으로 구현하였다.
+- Order, Assignment, Installation, Management 개별 aggregate 통합 조회로 인한 성능 저하를 막을 수 있다.
 - 모든 정보는 비동기 방식으로 발행된 이벤트를 수신하여 처리된다.
 - 설계 : MSAEz 설계의 view 매핑 설정 참조
 
-- 주문생성
+- 설문
 
 ![image](https://user-images.githubusercontent.com/76420081/119001165-b23df480-b9c6-11eb-9d62-bed7406f0709.png)
 
