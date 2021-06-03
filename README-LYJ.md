@@ -591,6 +591,7 @@ spec:
 
 
 - 확인 : kubectl get pods -w
+
 ![liveness](https://user-images.githubusercontent.com/81946287/120645682-aae11580-c4b3-11eb-94ba-1c757381e429.png)
 
 
