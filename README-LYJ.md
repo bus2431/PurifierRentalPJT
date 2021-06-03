@@ -289,68 +289,69 @@ spring:
 
 ## 동기식 호출 과 Fallback 처리
 
-- 분석 단계에서의 조건 중 하나로 배정(Assignment) 서비스에서 인터넷 가입신청 취소를 요청 받으면, 
-설치(installation) 서비스 취소 처리하는 부분을 동기식 호출하는 트랜잭션으로 처리하기로 하였다. 
+- 분석 단계에서의 조건 중 하나로 주문(Order) 서비스에서 설문 제출 요청 받으면, 
+관리(management) 서비스 설문종료 처리하는 부분을 동기식 호출하는 트랜잭션으로 처리하기로 하였다. 
 - 호출 프로토콜은 이미 앞서 Rest Repository 에 의해 노출되어 있는 REST 서비스를 FeignClient 를 이용하여 호출하도록 한다.
 
-설치 서비스를 호출하기 위하여 Stub과 (FeignClient) 를 이용하여 Service 대행 인터페이스 (Proxy) 를 구현
+관리 서비스를 호출하기 위하여 Stub과 (FeignClient) 를 이용하여 Service 대행 인터페이스 (Proxy) 를 구현
 ```
-# (Assignment) InstallationService.java
+# (Order) ManagementService.java
 
 	package purifierrentalpjt.external;
-	
+
 	import org.springframework.cloud.openfeign.FeignClient;
 	import org.springframework.web.bind.annotation.RequestBody;
 	import org.springframework.web.bind.annotation.RequestMapping;
 	import org.springframework.web.bind.annotation.RequestMethod;
 
-	/**
- 	 * 설치subsystem 동기호출
- 	 * @author Administrator
- 	 * 아래 주소는 Gateway주소임
- 	*/
+	import java.util.Date;
 
+	@FeignClient(name="Management", url="http://localhost:8084")
+	//@FeignClient(name="Management", url="http://management:8080")
+	public interface ManagementService {
 
-	@FeignClient(name="Installation", url="http://installation:8080")
-	//@FeignClient(name="Installation", url="http://localhost:8083")
-	public interface InstallationService {
-
-		@RequestMapping(method= RequestMethod.POST, path="/installations")
-    		public void cancelInstallation(@RequestBody Installation installation);
+    		@RequestMapping(method= RequestMethod.POST, path="/managements")
+   		 public void completeSurvey(@RequestBody Management management);
 
 	}
 ```
 
 정수기 렌탈 서비스 가입 취소 요청(cancelRequest)을 받은 후, 처리하는 부분
 ```
-# (Installation) InstallationController.java
+# (Management) ManagementController.java
 
 	package purifierrentalpjt;
 
-	@RestController
-	public class InstallationController {
+	/**
+ 	* Management Command
+ 	* @author Administrator
+ 	*
+ 	*/
+ 	@RestController
+ 	public class ManagementController {
 
     	  @Autowired
-    	  InstallationRepository installationRepository;
+    	  ManagementRepository managementRepository;
 
     	  /**
-     	   * 설치취소
-     	   * @param installation
-           */
-	  @RequestMapping(method=RequestMethod.POST, path="/installations")
-    	  public void installationCancellation(@RequestBody Installation installation) {
+     	  * 설문 완료
+     	  * @param management
+     	  */
+    	@RequestMapping(method=RequestMethod.POST, path="/management")
+    	public void surveyCompletion(@RequestBody Management management) {
     	
-    		System.out.println( "### 동기호출 -설치취소=" +ToStringBuilder.reflectionToString(installation) );
+    	  System.out.println( "### 동기호출 -설문완료");
 
-    		Optional<Installation> opt = installationRepository.findByOrderId(installation.getOrderId());
-    		if( opt.isPresent()) {
-    			Installation installationCancel =opt.get();
-    			installationCancel.setStatus("installationCanceled");
-    			installationRepository.save(installationCancel);
-    		} else {
-    			System.out.println("### 설치취소 - 못찾음");
-    		}
-    	}
+    	  Optional<Management> opt = managementRepository.findByOrderId(management.getOrderId());
+    	  if( opt.isPresent()) {
+    		Management surveyComplete =opt.get();
+    		surveyComplete.setStatus("surveyCompleted");
+    		managementRepository.save(surveyComplete);
+    	  } else {
+    		System.out.println("### 설문 - 못찾음");
+    	  }
+       }
+   
 ```
 
 ## 비동기식 호출 / 시간적 디커플링 / 장애격리 / 최종 (Eventual) 일관성 테스트
