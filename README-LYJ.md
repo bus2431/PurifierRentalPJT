@@ -691,7 +691,22 @@ siege -r 2000 -c 200 -v -v 'http://a0c43786b71d549d2a02a45758b87b82-1426910919.a
 
 ![autoscale5](https://user-images.githubusercontent.com/81946287/120631690-1b336b00-c4a3-11eb-81cc-94d4e1ad1bb5.png)
 
+## 무정지 재배포
 
+* 먼저 무정지 재배포가 100% 되는 것인지 확인하기 위해서 Autoscaler 이나 서킷브레이커 설정을 제거함
+
+- seige 로 배포작업 직전에 워크로드를 모니터링 한다.
+```
+siege -c250 -t200S  -v 'http://ad9fa9f229b5b4d51b2bfb0e4dab31ba-1730418607.ap-southeast-1.elb.amazonaws.com:8080/order/submitSurvey PATCH orderId=1&surveyResult=BAD'
+```
+
+- readinessProbe, livenessProbe 설정되지 않은 상태로 deployment.yml을 수정한다.
+- Github에 buildspec.yml 수정 발생으로 CodeBuild 자동 빌드/배포 수행된다.
+- siege 수행 결과 : 
+
+- readinessProbe, livenessProbe 설정
+- siege 수행 결과 : 
+![readness](https://user-images.githubusercontent.com/81946287/120744113-45356d80-c535-11eb-940f-c97d3b7fc848.png)
 
 
 
