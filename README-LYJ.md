@@ -227,18 +227,99 @@ public class Management {
 
 ## 폴리글랏 퍼시스턴스
 - order, Assignment, installation 서비스 모두 H2 메모리DB를 적용하였다.  
+- 로컬환경에서 Management 서비스에 대해서 MongoDB를 적용하였다
 다양한 데이터소스 유형 (RDB or NoSQL) 적용 시 데이터 객체에 @Entity 가 아닌 @Document로 마킹 후, 기존의 Entity Pattern / Repository Pattern 적용과 데이터베이스 제품의 설정 (application.yml) 만으로 가능하다.
 
 ```
---application.yml // mariaDB 추가 예시
+--application.yml 
 spring:
-  profiles: real-db
-  datasource:
-        url: jdbc:mariadb://rds주소:포트명(기본은 3306)/database명
-        username: db계정
-        password: db계정 비밀번호
-        driver-class-name: org.mariadb.jdbc.Driver
+  profiles: default
+  jpa:
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: localhost:9092
+        streams:
+          binder:
+            configuration:
+              default:
+                key:
+                  serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+                value:
+                  serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+      bindings:
+        event-in:
+          group: Management
+          destination: purifierrentalpjt
+          contentType: application/json
+        event-out:
+          destination: purifierrentalpjt
+          contentType: application/json
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/testdb
 ```
+
+- Repository 설정
+```
+package purifierrentalpjt;
+
+import org.springframework.data.repository.CrudRepository;
+import java.util.Optional;
+
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.repository.query.Param;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+
+@RepositoryRestResource(collectionResourceRel="product", path="product")
+//public interface ManagementRepository extends CrudRepository<Management, Long>{
+
+public interface ManagementRepository extends MongoRepository<Management, Long>{ 
+    Optional<Management> findByOrderId(Long orderId);
+
+}
+```
+
+- Management.java
+```
+import org.springframework.data.mongodb.core.mapping.Document;
+
+//@Entity
+//@Table(name="Management_table")
+@Document(collection = "SURVEY")
+public class Management {
+
+    @Id
+    //@GeneratedValue(strategy=GenerationType.AUTO)
+    private Long id;
+    private Long orderId;
+    private String surveyResult;
+
+    @PostPersist
+    public void onPostPersist(){
+
+        System.out.println("=================>>>>" + this.getStatus() + "POST TEST");
+
+        SurveyCompleted surveyCompleted = new SurveyCompleted();
+
+        surveyCompleted.setId(this.getId());
+        surveyCompleted.setOrderId(this.orderId);
+        surveyCompleted.setSurveyResult(this.getSurveyResult());
+        BeanUtils.copyProperties(this, surveyCompleted);
+        surveyCompleted.publishAfterCommit();
+
+
+    }
+```
+
+- 확인
+![mongo](https://user-images.githubusercontent.com/81946287/120742656-41541c00-c532-11eb-95d0-fb69f9020e33.png)
+
 
 ## 동기식 호출 과 Fallback 처리
 
