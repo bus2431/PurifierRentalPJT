@@ -119,48 +119,13 @@
 # 분석/설계
 
 
-## AS-IS 조직 (Horizontally-Aligned)
-![as_is](https://user-images.githubusercontent.com/81946287/118763701-4323ab80-b8b3-11eb-9a23-15da2ea74528.png)
-
-## TO-BE 조직 (Vertically-Aligned)
-![to_be](https://user-images.githubusercontent.com/81946287/118763808-6f3f2c80-b8b3-11eb-807c-75ddb2daaddd.png)
-
-
-## Event Storming 결과
+## 팀Project Event Storming 결과
 * MSAEz 로 모델링한 이벤트스토밍 결과:  
   - http://www.msaez.io/#/storming/IkrhsmX1DtOtbLQM9ri9QJ9uoRm2/every/ee3188d76ffc9344628b8a9183bcc9b1
 
-### 이벤트 도출
-![Event](https://user-images.githubusercontent.com/81946287/118763908-9d247100-b8b3-11eb-992f-f930e774b284.png)
-
-
-### 폴리시,어그리게잇 부착
-![Policy](https://user-images.githubusercontent.com/81946287/118763987-bb8a6c80-b8b3-11eb-9fe4-81c8f0380262.png)
-
-    -가입신청, 서비스관리센터, 설치 부분을 정의함
-
-### 액터, 커맨드 부착
-![Command](https://user-images.githubusercontent.com/81946287/118764046-d1982d00-b8b3-11eb-9f90-87bf95f1660e.png)
-
-
-### 바운디드 컨텍스트로 묶기
-![BoundedContext](https://user-images.githubusercontent.com/81946287/118764169-099f7000-b8b4-11eb-9b65-acc48be3d56c.png)
-
-    - 도메인 서열 분리 : 가입신청 -> 서비스관리센터 -> 설치 순으로 정의
-       
-
-### View모델 추가 및 폴리시의 이동과 컨텍스트 매핑 (파란색점선은 Pub/Sub, 빨간색실선은 Req/Resp)
-![AddView](https://user-images.githubusercontent.com/81946287/118764287-38b5e180-b8b4-11eb-997c-92032adf193d.png)
-
-
-### 완성된 1차 모형
-![firstDesign](https://user-images.githubusercontent.com/81946287/118764341-4d927500-b8b4-11eb-8345-71254fe30f70.png)
-
-### 수정된 2차 모형
 ![2ndDesign](https://user-images.githubusercontent.com/81946287/118765229-bc240280-b8b5-11eb-8bf4-2015470e7987.png)
 
-    - Management 마이크로서비스를 추가하여 설계
-    - 매니저가 설문결과 확인을 위한 View 모델 배치
+
     
 ### (개인과제) Management 서비스 추가된 모형
 ![Design4](https://user-images.githubusercontent.com/81946287/120586121-e8bb4b00-c46d-11eb-98d5-6e7f4379d80c.png)
@@ -173,18 +138,6 @@
 #### 비기능 요구사항 coverage
 ![Design6](https://user-images.githubusercontent.com/81946287/120586148-f1ac1c80-c46d-11eb-8761-58239468c0ee.png)
 
-
-
-## 헥사고날 아키텍처 다이어그램 도출
-![hexagonal1](https://user-images.githubusercontent.com/81946287/118779966-88050d80-b8c6-11eb-88dc-74be433e6f17.png)
-
-
-## 신규 서비스 추가 시 기존 서비스에 영향이 없도록 열린 아키택처 설계
-
-- 신규 개발 조직 추가 시, 기존의 마이크로 서비스에 수정이 발생하지 않도록 Inbund 요청을 REST 가 아닌 Event를 Subscribe 하는 방식으로 구현하였다.
-- 기존 마이크로 서비스에 대하여 아키텍처, 데이터베이스 구조와 관계 없이 추가할 수 있다.
-
-![hexagonal2](https://user-images.githubusercontent.com/81946287/118780023-97845680-b8c6-11eb-89d3-01fabd32fbfa.png)
 
 
 
