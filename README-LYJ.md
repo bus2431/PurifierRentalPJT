@@ -611,58 +611,7 @@ siege -r 2000 -c 200 -v -v 'http://a0c43786b71d549d2a02a45758b87b82-1426910919.a
 ![autoscale5](https://user-images.githubusercontent.com/81946287/120631690-1b336b00-c4a3-11eb-81cc-94d4e1ad1bb5.png)
 
 
-## 무정지 재배포
 
-* 먼저 무정지 재배포가 100% 되는 것인지 확인하기 위해서 Autoscaler 이나 서킷브레이커 설정을 제거함
-
-- seige 로 배포작업 직전에 워크로드를 모니터링 한다.
-```
-siege -c50 -t180S  -v 'http://a39e59e8f1e324d23b5546d96364dc45-974312121.ap-southeast-2.elb.amazonaws.com:8080/order/joinOrder POST productId=4&productName=PURI4&installationAddress=Dongtan&customerId=504'
-```
-
-- readinessProbe, livenessProbe 설정되지 않은 상태로 buildspec.yml을 수정한다.
-- Github에 buildspec.yml 수정 발생으로 CodeBuild 자동 빌드/배포 수행된다.
-- siege 수행 결과 : 
-
-- readinessProbe, livenessProbe 설정하고 buildspec.yml을 수정한다.
-- Github에 buildspec.yml 수정 발생으로 CodeBuild 자동 빌드/배포 수행된다.
-- siege 수행 결과 : 
-
-
-## ConfigMap 적용
-
-- 설정의 외부 주입을 통한 유연성을 제공하기 위해 ConfigMap을 적용한다.
-- orderstatus 에서 사용하는 mySQL(AWS RDS 활용) 접속 정보를 ConfigMap을 통해 주입 받는다.
-
-```
-cat <<EOF | kubectl apply -f -
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: order
-data:
-  urlstatus: "jdbc:mysql://order.cgzkudckye4b.ap-southeast-2:3306/orderstatus?serverTimezone=UTC&useUnicode=true&characterEncoding=utf8"
-EOF
-```
-
-## Secret 적용
-
-- username, password와 같은 민감한 정보는 ConfigMap이 아닌 Secret을 적용한다.
-- etcd에 암호화 되어 저장되어, ConfigMap 보다 안전하다.
-- value는 base64 인코딩 된 값으로 지정한다. (echo root | base64)
-
-```
-cat <<EOF | kubectl apply -f -
-apiVersion: v1
-kind: Secret
-metadata:
-  name: order
-type: Opaque
-data:
-  username: xxxxx <- 보안 상, 임의의 값으로 표시함 
-  password: xxxxx <- 보안 상, 임의의 값으로 표시함
-EOF
-```
 
 
 ## 운영 모니터링
