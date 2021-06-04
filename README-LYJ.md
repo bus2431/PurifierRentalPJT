@@ -700,11 +700,11 @@ siege -r 2000 -c 200 -v -v 'http://a0c43786b71d549d2a02a45758b87b82-1426910919.a
 siege -c250 -t200S  -v 'http://ad9fa9f229b5b4d51b2bfb0e4dab31ba-1730418607.ap-southeast-1.elb.amazonaws.com:8080/order/submitSurvey PATCH orderId=1&surveyResult=BAD'
 ```
 
-- readinessProbe, livenessProbe 설정되지 않은 상태로 deployment.yml을 수정한다.
-- Github에 buildspec.yml 수정 발생으로 CodeBuild 자동 빌드/배포 수행된다.
+- readinessProbe, livenessProbe 설정되지 않은 상태
 - siege 수행 결과 : 
+![readness](https://user-images.githubusercontent.com/81946287/120746953-2b972480-c53b-11eb-8ce4-8d285628e149.png)
 
-- readinessProbe, livenessProbe 설정
+- readinessProbe, livenessProbe 설정한 상태
 - siege 수행 결과 : 
 ![readness](https://user-images.githubusercontent.com/81946287/120744113-45356d80-c535-11eb-940f-c97d3b7fc848.png)
 
