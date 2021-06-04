@@ -317,8 +317,7 @@ public class Management {
     }
 ```
 
-- 확인
-![mongo](https://user-images.githubusercontent.com/81946287/120742656-41541c00-c532-11eb-95d0-fb69f9020e33.png)
+
 
 
 ## 동기식 호출 과 Fallback 처리
