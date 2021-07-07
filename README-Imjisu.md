@@ -134,12 +134,7 @@
 
 ### 서비스 추가된 완성본에 대한 기능적/비기능적 요구사항을 커버하는지 검증
 #### 시나리오 Coverage Check
-![Design5](https://user-images.githubusercontent.com/81946287/120586138-ef49c280-c46d-11eb-9090-286e222c6e37.png)
-
-#### 비기능 요구사항 coverage
-![Design6](https://user-images.githubusercontent.com/81946287/120586148-f1ac1c80-c46d-11eb-8761-58239468c0ee.png)
-
-
+![image](https://user-images.githubusercontent.com/84304047/124768850-f899e380-df73-11eb-8c8e-0443474bba34.png)
 
 
 # 구현:
@@ -163,36 +158,76 @@
 - EKS : CI/CD 통해 빌드/배포 ("운영 > CI-CD 설정" 부분 참조)
 ```
 
-
-
-
-
 ## DDD 의 적용
-이벤트 스토밍을 통해 도출된 Micro Service 는 총 6개이나, 3개만 구현하였으며 그 중 View는 CQRS를 위한 서비스이다.
+- 각 서비스내에 도출된 핵심 Aggregate Root 객체를 Entity 로 선언하였다: Order, Assignment, Installation, Management
+- Management(고객관리) 마이크로서비스 예시
 
-|MSA|기능|port|URL|
-| :--: | :--: | :--: | :--: |
-|concert| 티켓정보 관리 |8081|http://localhost:8081/concerts|
-|booking| 티켓예매 관리 |8082|http://localhost:8082/bookings|
-|view| 콘서트 예매내역 조회 |8086|http://localhost:8086/mypages|
+```
+package purifierrentalpjt;
+
+import javax.persistence.*;
+import org.springframework.beans.BeanUtils;
+import java.util.List;
+import java.util.Date;
+
+@Entity
+@Table(name="Management_table")
+public class Management {
+
+    @Id
+    @GeneratedValue(strategy=GenerationType.AUTO)
+    private Long id;
+    private Long orderId;
+    private Long surveyId;
+    private Long customerId;
+    private String status;
+    private String surveyResult;
+
+    @PostPersist
+    public void onPostPersist(){
+
+        System.out.println("=================>>>>" + this.getStatus() + "POST TEST");
+
+        SurveyCompleted surveyCompleted = new SurveyCompleted();
+
+        surveyCompleted.setId(this.getId());
+        surveyCompleted.setOrderId(this.orderId);
+        surveyCompleted.setStatus(this.getStatus()); 
+        BeanUtils.copyProperties(this, surveyCompleted);
+        surveyCompleted.publishAfterCommit();
 
 
-- AWS에 gateway 등록
-![gateway](https://user-images.githubusercontent.com/85874443/122735509-0f74e080-d2ba-11eb-84ef-6438b66c62f2.PNG)
+    }
 
 
-- concert 서비스의 티켓등록
-![concert](https://user-images.githubusercontent.com/85874443/122735425-fc621080-d2b9-11eb-89a8-bb5f727ee13a.PNG)
+    public Long getId() {
+        return id;
+    }
+
+```
+
+적용 후 REST API의 테스트
+1) 공기청정기 렌탈 서비스 가입완료 후 설문조사 처리
+
+- (a) http -f POST  http://localhost:8081/order/joinOrder productId=1 productName=PURI1 installationAddress="Addr1" customerId=101
+- (b) http -f PATCH http://localhost:8083/installations orderId=1 
+- (c) http -f PATCH http://localhost:8081/order/submitSurvey orderId=1 surveyResult="GOOD"
+![Survey_command](https://user-images.githubusercontent.com/81946287/120572864-a7b83c00-c457-11eb-8254-6237c680da5e.png)
+
+2) 카프카 메시지 확인
+
+- (a) 설문조사 제출 후 : surveySubmit
+![Survey_kafka](https://user-images.githubusercontent.com/81946287/120572892-b56dc180-c457-11eb-990f-49f8578e9994.png)
 
 
-- booking 서비스의 예매
-![booking](https://user-images.githubusercontent.com/85874443/122735451-0257f180-d2ba-11eb-9194-a871828eb95b.PNG)
 
 
-
-Gateway 적용
+Gateway 적용 ----현행화 필요함
 API GateWay를 통하여 마이크로 서비스들의 진입점을 통일할 수 있다. 
 다음과 같이 GateWay를 적용하였다.
+
+
+
 
 ```yaml
 spring:
