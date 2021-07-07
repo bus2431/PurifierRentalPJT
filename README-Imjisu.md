@@ -223,40 +223,50 @@ public class Management {
 
 
 ## Gateway 적용 현행화 필요
-API GateWay를 통하여 마이크로 서비스들의 진입점을 통일할 수 있다. 
-다음과 같이 GateWay를 적용하였다.
+API Gateway를 통하여, 마이크로 서비스들의 진입점을 통일한다.
 
-```yaml
+```
+# application.yml 파일에 라우팅 경로 설정
+
 spring:
-  profiles: docker
+  profiles: default
   cloud:
     gateway:
       routes:
-        - id: concert
-          uri: http://concert:8080
+        - id: order
+          uri: http://localhost:8081
           predicates:
-            - Path=/concerts/**
-        - id: booking
-          uri: http://booking:8080
+            - Path=/order/**,/orders/**,/orderStatuses/**
+        - id: assignment
+          uri: http://localhost:8082
           predicates:
-            - Path=/bookings/** 
-        - id: Alarm
-          uri: http://Alarm:8080
+            - Path=/assignments/**,/assignment/**  
+        - id: installation
+          uri: http://localhost:8083
           predicates:
-            - Path=/alarms/** 
-        - id: Delivery
-          uri: http://Delivery:8080
+            - Path=/installations/**,/installation/**
+        - id: management
+          uri: http://localhost:8084
           predicates:
-            - Path=/deliveries/** 
-        - id: Payment
-          uri: http://Payment:8080
-          predicates:
-            - Path=/payments/** 
-        - id: View
-          uri: http://View:8080
-          predicates:
-            - Path= /mypages/**
-```  
+            - Path=/managements/**,/management/**
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "*"
+            allowedMethods:
+              - "*"
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+
+server:
+  port: 8080
+```
+
+- EKS에 배포 시, MSA는 Service type을 ClusterIP(default)로 설정하여, 클러스터 내부에서만 호출 가능하도록 한다.
+- API Gateway는 Service type을 LoadBalancer로 설정하여 외부 호출에 대한 라우팅을 처리한다.
+
 
 ## CQRS
 Materialized View 를 구현하여, 타 마이크로서비스의 데이터 원본에 접근없이(Composite 서비스나 조인SQL 등 없이) 도 내 서비스의 화면 구성과 잦은 조회가 가능하게 구현해 두었다.
@@ -960,52 +970,6 @@ public class PolicyHandler{
 ![ViewHandler2](https://user-images.githubusercontent.com/81946287/120587921-35545580-c471-11eb-86c2-741a5ae8455e.png)
 
 
-## API Gateway
-
-API Gateway를 통하여, 마이크로 서비스들의 진입점을 통일한다.
-
-```
-# application.yml 파일에 라우팅 경로 설정
-
-spring:
-  profiles: default
-  cloud:
-    gateway:
-      routes:
-        - id: order
-          uri: http://localhost:8081
-          predicates:
-            - Path=/order/**,/orders/**,/orderStatuses/**
-        - id: assignment
-          uri: http://localhost:8082
-          predicates:
-            - Path=/assignments/**,/assignment/**  
-        - id: installation
-          uri: http://localhost:8083
-          predicates:
-            - Path=/installations/**,/installation/**
-        - id: management
-          uri: http://localhost:8084
-          predicates:
-            - Path=/managements/**,/management/**
-      globalcors:
-        corsConfigurations:
-          '[/**]':
-            allowedOrigins:
-              - "*"
-            allowedMethods:
-              - "*"
-            allowedHeaders:
-              - "*"
-            allowCredentials: true
-
-server:
-  port: 8080
-```
-
-- EKS에 배포 시, MSA는 Service type을 ClusterIP(default)로 설정하여, 클러스터 내부에서만 호출 가능하도록 한다.
-- API Gateway는 Service type을 LoadBalancer로 설정하여 외부 호출에 대한 라우팅을 처리한다.
-
 
 
 # 운영
@@ -1269,14 +1233,4 @@ CloudWatch Logs 수집, 아카이브 스토리지 및 데이터 스캔 요금이
 
 ![image](https://user-images.githubusercontent.com/64656963/86348145-3a75b700-bc9a-11ea-8477-e7e7178c51fe.png)
 
-
-# 시연
- 1. 공기청정기 렌탈 서비스 가입신청 -> installation 접수 완료 상태
- 2. 설치 기사 설치 완료 처리 -> 가입 신청 완료 상태
- 3. 가입 취소
- 4. EDA 구현
-   - Assignment 장애 상황에서 order(가입 신청) 정상 처리
-   - Assignment 정상 전환 시 수신 받지 못한 이벤트 처리
- 5. 무정지 재배포
- 6. 오토 스케일링
 
