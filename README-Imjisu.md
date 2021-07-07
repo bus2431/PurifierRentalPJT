@@ -128,7 +128,7 @@
 
     
 ### (개인과제) Management 서비스 추가된 모형
-![Design4](https://user-images.githubusercontent.com/81946287/120586121-e8bb4b00-c46d-11eb-98d5-6e7f4379d80c.png)
+![image](https://user-images.githubusercontent.com/84304047/124766408-dacb7f00-df71-11eb-8101-a3d02053ef51.png)
 
 
 ### 서비스 추가된 완성본에 대한 기능적/비기능적 요구사항을 커버하는지 검증
