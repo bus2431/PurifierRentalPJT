@@ -222,12 +222,9 @@ public class Management {
 
 
 
-Gateway 적용 ----현행화 필요함
+## Gateway 적용 현행화 필요
 API GateWay를 통하여 마이크로 서비스들의 진입점을 통일할 수 있다. 
 다음과 같이 GateWay를 적용하였다.
-
-
-
 
 ```yaml
 spring:
