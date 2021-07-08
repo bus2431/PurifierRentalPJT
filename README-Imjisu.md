@@ -163,7 +163,7 @@
 - Management(고객관리) 마이크로서비스 예시
 
 ```
-package purifierrentalpjt;
+package airpurifierrentalpjt;
 
 import javax.persistence.*;
 import org.springframework.beans.BeanUtils;
