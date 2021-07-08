@@ -576,8 +576,7 @@ readinessProbe:
 ![image](https://user-images.githubusercontent.com/84304047/124864926-b9f83d80-dff4-11eb-9ace-ae6f425fe55b.png)
 
 - 다시 readiness 정상 적용 후, Availability 100% 확인  
-
-    ![image](https://user-images.githubusercontent.com/84304047/124998192-efe60200-e086-11eb-889b-f84ab79f1bbf.png)
+![image](https://user-images.githubusercontent.com/84304047/124998798-faed6200-e087-11eb-9707-1af31a75904b.png)
 
     
     
