@@ -307,22 +307,26 @@ server:
 
 
 ## CQRS
-Materialized View 를 구현하여, 타 마이크로서비스의 데이터 원본에 접근없이(Composite 서비스나 조인SQL 등 없이) 도 내 서비스의 화면 구성과 잦은 조회가 가능하게 구현해 두었다.
-본 프로젝트에서  역할은 view 서비스가 수행한다.
+가입신청+설문진행 상태 조회를 위한 서비스를 CQRS 패턴으로 구현하였다.
+- Order, Assignment, Installation, Management 개별 aggregate 통합 조회로 인한 성능 저하를 막을 수 있다.
+- 모든 정보는 비동기 방식으로 발행된 이벤트를 수신하여 처리된다.
+- 설계 : MSAEz 설계의 view 매핑 설정 참조
 
-모든 정보는 비동기 방식으로 발행된 이벤트(예매, 예매 취소)를 수신하여 처리된다.
+- 설문 제출
 
-예매(Booked) 실행
- 
-![image](https://user-images.githubusercontent.com/85874443/122846091-17776380-d340-11eb-87e6-fb330d787236.PNG)
+![설문](https://user-images.githubusercontent.com/81946287/120587902-2d94b100-c471-11eb-9647-4a27811fdccb.png)
 
-카프카 메시지
+- 카프카 메시지
 
-![ka1](https://user-images.githubusercontent.com/85874443/122853258-e6516000-d34c-11eb-9783-37814741be1c.PNG)
+![설문_kafka](https://user-images.githubusercontent.com/81946287/120587906-2ff70b00-c471-11eb-92ac-274ea581b944.png)
 
-예매(Booked) 실행 후 mypage 화면
 
-![image](https://user-images.githubusercontent.com/85874443/122846131-2a8a3380-d340-11eb-851e-be9df34e5cdf.PNG)
+- 뷰테이블 수신처리
+
+![ViewHandler](https://user-images.githubusercontent.com/81946287/120587912-32596500-c471-11eb-8f64-1ee819ddfc25.png)
+
+![ViewHandler2](https://user-images.githubusercontent.com/81946287/120587921-35545580-c471-11eb-86c2-741a5ae8455e.png)
+
   
 ## 폴리글랏 퍼시스턴스
 concert 서비스의 DB 를 HSQL 로 설정하여 MSA간 서로 다른 종류의 DB간에도 문제 없이 동작하여 다형성을 만족하는지 확인하였다.
