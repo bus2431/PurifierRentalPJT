@@ -122,7 +122,7 @@
 
 ## 팀Project Event Storming 결과
 * MSAEz 로 모델링한 이벤트스토밍 결과:  
-  - http://www.msaez.io/#/storming/IkrhsmX1DtOtbLQM9ri9QJ9uoRm2/every/ee3188d76ffc9344628b8a9183bcc9b1
+  - http://www.msaez.io/#/storming/Cxdgj5SBtvclVuCxWENSvPhVTuD2/mine/04d95b6ac2871ef725a46b9cb7114f58
 
 ![2ndDesign](https://user-images.githubusercontent.com/81946287/118765229-bc240280-b8b5-11eb-8bf4-2015470e7987.png)
 
