@@ -492,8 +492,6 @@ spec:
 kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.3.7/components.yaml
 kubectl get deployment metrics-server -n kube-system
 ```
-### 오토스케일 아웃
-
 - 주문 서비스에 대한 replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 1프로를 넘어서면 replica 를 10개까지 늘려준다.
 
 ```
@@ -548,9 +546,7 @@ siege -r 2000 -c 200 -v -v 'http://a0c43786b71d549d2a02a45758b87b82-1426910919.a
 
 ```
 
-- 메트릭스 서버 설치 후 부하 테스트 진행하니 오토스케일 발생한 것을 확인하였음
-
-![autoscale3](https://user-images.githubusercontent.com/81946287/120631667-179fe400-c4a3-11eb-8004-013536c07f27.png)
+- 메트릭스 서버 설치 후 부하 테스트 진행하니 오토스케일 발생한 것을 확인하였음(레플리카 10)
 
 ![autoscale5](https://user-images.githubusercontent.com/81946287/120631690-1b336b00-c4a3-11eb-81cc-94d4e1ad1bb5.png)
 
@@ -580,29 +576,9 @@ readinessProbe:
 ![image](https://user-images.githubusercontent.com/84304047/124864926-b9f83d80-dff4-11eb-9ace-ae6f425fe55b.png)
 
 - 다시 readiness 정상 적용 후, Availability 100% 확인  
-![image](https://user-images.githubusercontent.com/84304047/124901842-57fffe00-e01d-11eb-8bb9-ffdf39c74682.png)
 
-    
-    
-    
-    
-    
-    * 먼저 무정지 재배포가 100% 되는 것인지 확인하기 위해서 Autoscaler 이나 서킷브레이커 설정을 제거함
+    ![image](https://user-images.githubusercontent.com/84304047/124998192-efe60200-e086-11eb-889b-f84ab79f1bbf.png)
 
-- seige 로 배포작업 직전에 워크로드를 모니터링 한다.
-```
-siege -c250 -t200S  -v 'http://ad9fa9f229b5b4d51b2bfb0e4dab31ba-1730418607.ap-southeast-1.elb.amazonaws.com:8080/order/submitSurvey PATCH orderId=1&surveyResult=BAD'
-```
-
-- readinessProbe, livenessProbe 설정되지 않은 상태
-- siege 수행 결과 : 
-![readness](https://user-images.githubusercontent.com/81946287/120746953-2b972480-c53b-11eb-8ce4-8d285628e149.png)
-
-- readinessProbe, livenessProbe 설정한 상태
-- siege 수행 결과 : 
-![readness](https://user-images.githubusercontent.com/81946287/120744113-45356d80-c535-11eb-940f-c97d3b7fc848.png)
-
-    
     
     
     
@@ -626,62 +602,7 @@ livenessProbe:
       ![image](https://user-images.githubusercontent.com/84304047/124913334-f7c38900-e029-11eb-8975-427ce3ee9b12.png)
 
 
-    - retry 시도 확인 실패
-  
-       ![image](https://user-images.githubusercontent.com/84304047/124913284-ea0e0380-e029-11eb-83ed-87b9652f7579.png)
-
-
-
-
-pod의 container가 정상적으로 기동되는지 확인하여, 비정상 상태인 경우 pod를 재기동하도록 한다.   
-
-아래의 값으로 liveness를 설정한다.
-- 재기동 제어값 : /tmp/healthy 파일의 존재를 확인
-- 기동 대기 시간 : 3초
-- 재기동 횟수 : 5번까지 재시도
-
-이때, 재기동 제어값인 /tmp/healthy파일을 강제로 지워 liveness가 pod를 비정상 상태라고 판단하도록 하였다.    
-5번 재시도 후에도 파드가 뜨지 않았을 경우 CrashLoopBackOff 상태가 됨을 확인하였다.   
-##### order에 Liveness 적용한 내용
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: order
-  labels:
-    app: order
-spec:
-    spec:
-      containers:
-        - name: order
-          image: 879772956301.dkr.ecr.ap-southeast-1.amazonaws.com/puri12-order:v1
-          args:
-          - /bin/sh
-          - -c
-          - touch /tmp/healthy; sleep 10; rm -rf /tmp/healthy; sleep 600;
-          ports:
-            - containerPort: 8080
-          readinessProbe:
-            httpGet:
-              path: '/actuator/health'
-              port: 8080
-            initialDelaySeconds: 10
-            timeoutSeconds: 2
-            periodSeconds: 5
-            failureThreshold: 10
-          livenessProbe:
-            exec:
-              command:
-              - cat
-              - /tmp/healthy
-            initialDelaySeconds: 3
-            timeoutSeconds: 2
-            periodSeconds: 5
-            failureThreshold: 5
-```
-
-
-- 확인 : kubectl get pods -w
+    - retry 시도 확인 
 
 ![liveness](https://user-images.githubusercontent.com/81946287/120645682-aae11580-c4b3-11eb-94ba-1c757381e429.png)
 
