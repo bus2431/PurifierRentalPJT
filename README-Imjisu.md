@@ -503,7 +503,7 @@ kubectl get deployment metrics-server -n kube-system
 
 - 예약 서비스에 리소스에 대한 사용량을 정의한다.
 
-<code>booking/kubernetes/deployment.yml</code>
+<code>Management/kubernetes/deployment.yml</code>
 
 ```yml
   resources:
