@@ -366,7 +366,7 @@ saveInfo 를 불러 infoComplted에서 받아 Order 로 넘어가는 처리(req/
         /* 정보처리 */
     	System.out.println("### 정보저장 Update and Update Event raised..." + this.getStatus());
         if(this.getStatus().equals("surveySubmit")) {
-            SurveySubmitted surveySubmitted = new SurveySubmitted();
+            InfoCompleted InfoCompleted = new InfoCompleted();
             BeanUtils.copyProperties(this, surveySubmitted);
             surveySubmitted.publishAfterCommit();
 
