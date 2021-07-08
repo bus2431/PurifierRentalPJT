@@ -402,7 +402,7 @@ concert 서비스의 DB 를 HSQL 로 설정하여 MSA간 서로 다른 종류의
 - git에서 소스 가져오기
 
 ```
-git clone --recurse-submodules https://github.com/skteam4/concert/concertbooking.git
+git clone https://github.com/bus2431/PurifierRentalPJT
 ```
 
 - Build 하기
@@ -508,13 +508,12 @@ readinessProbe:
 - kubectl apply -f deployment.yml
 - kubectl apply -f service.yaml
 
-- readiness 적용 전. booking이 배포되는 중  
-  ![update_version_80%](https://user-images.githubusercontent.com/85874443/122764789-c84b1780-d2da-11eb-951c-b6058f77b208.PNG)
+- readiness 적용 전. Order이 배포되는 중  
+![image](https://user-images.githubusercontent.com/84304047/124864926-b9f83d80-dff4-11eb-9ace-ae6f425fe55b.png)
 
 
 - 다시 readiness 정상 적용 후, Availability 100% 확인  
-  ![update_version_100%](https://user-images.githubusercontent.com/85874443/122764804-ce40f880-d2da-11eb-83fa-af8a85d8431b.PNG)
-
+![image](https://user-images.githubusercontent.com/84304047/124864954-c2e90f00-dff4-11eb-9bd8-7e23ab75a8e3.png)
 
     
 ## Self-healing (Liveness Probe)
@@ -533,7 +532,7 @@ livenessProbe:
 ```
 
 - port 및 path 잘못된 값으로 변경 후, retry 시도 확인 
-    - booking 에 있는 deployment.yml 수정  
+    - order 에 있는 deployment.yml 수정  
         ![livenessProbe_yaml](https://user-images.githubusercontent.com/85874443/122760461-1c073200-d2d6-11eb-8db8-c25c6ef9abb4.png)
 
 
