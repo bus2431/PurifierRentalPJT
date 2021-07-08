@@ -19,7 +19,6 @@
   - [운영](#운영)
     - [Deploy/Pipeline](#Deploy-Pipeline)
     - [Autoscale(HPA)](#Autoscale)
-    - [Circuit Breaker](#Circuit-Breaker)
     - [Zero-Downtime deploy(Readiness Probe)](#Zero-Downtime-deploy(Readiness-Probe))
     - [Self-healing(Liveness Probe)](#Self-healing)
   - [신규 개발 조직의 추가](#신규-개발-조직의-추가)
@@ -586,11 +585,11 @@ livenessProbe:
 
 - port 및 path 잘못된 값으로 변경 후, retry 시도 확인 
     - order 에 있는 deployment.yml 수정  
-        ![livenessProbe_yaml](https://user-images.githubusercontent.com/85874443/122760461-1c073200-d2d6-11eb-8db8-c25c6ef9abb4.png)
+        ![image](https://user-images.githubusercontent.com/84304047/124911427-b3cf8480-e027-11eb-80ad-462ec562dee5.png)
 
 
-    - retry 시도 확인  
-        ![livenessProbe](https://user-images.githubusercontent.com/85874443/122760301-ecf0c080-d2d5-11eb-9da5-bd39c7867e24.png)
+    - retry 시도 확인 실패
+       ![image](https://user-images.githubusercontent.com/84304047/124912174-9949db00-e028-11eb-92b5-6de7c99ae9dc.png)
 
 
 
