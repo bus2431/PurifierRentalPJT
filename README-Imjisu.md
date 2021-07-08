@@ -307,9 +307,7 @@ server:
 - 설계 : MSAEz 설계의 view 매핑 설정 참조
 
 - 정보저장
-
-![정보저장](https://user-images.githubusercontent.com/81946287/120587902-2d94b100-c471-11eb-9647-4a27811fdccb.png)
-
+![image](https://user-images.githubusercontent.com/84304047/125000391-376e8d00-e08b-11eb-872a-5ebdf85b6fbc.png)
 - 카프카 메시지
 
 ![_kafka](https://user-images.githubusercontent.com/81946287/120587906-2ff70b00-c471-11eb-92ac-274ea581b944.png)
