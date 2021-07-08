@@ -339,113 +339,61 @@ concert 서비스의 DB 를 HSQL 로 설정하여 MSA간 서로 다른 종류의
 
 
 ## 동기식 호출과 Fallback 처리
-분석단계에서의 조건 중 하나로  콘서트 티켓 예약수량은 등록된 티켓 수량을 초과 할 수 없으며
-예약(Booking)->콘서트(Concert) 간의 호출은 동기식 일관성을 유지하는 트랜잭션으로 처리하기로 하였다. 
-호출 프로토콜은 Rest Repository 에 의해 노출되어있는 REST 서비스를 FeignClient 를 이용하여 호출하도록 한다.
+- 분석 단계에서의 조건 중 하나로 주문(Order) 서비스에서 설문 제출 요청 받으면, 
+관리(management) 서비스 설문종료 처리하는 부분을 동기식 호출하는 트랜잭션으로 처리하기로 하였다. 
+- 호출 프로토콜은 이미 앞서 Rest Repository 에 의해 노출되어 있는 REST 서비스를 FeignClient 를 이용하여 호출하도록 한다.
 
+관리 서비스를 호출하기 위하여 Stub과 (FeignClient) 를 이용하여 Service 대행 인터페이스 (Proxy) 를 구현
+```
+# (Order) ManagementService.java
 
+	package purifierrentalpjt.external;
 
-Booking  내 external.ConcertService
+	import org.springframework.cloud.openfeign.FeignClient;
+	import org.springframework.web.bind.annotation.RequestBody;
+	import org.springframework.web.bind.annotation.RequestMapping;
+	import org.springframework.web.bind.annotation.RequestMethod;
 
-```java
-package concertbooking.external;
+	import java.util.Date;
 
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+	@FeignClient(name="Management", url="http://localhost:8084")
+	//@FeignClient(name="Management", url="http://management:8080")
+	public interface ManagementService {
 
+    		@RequestMapping(method= RequestMethod.POST, path="/managements")
+   		 public void completeSurvey(@RequestBody Management management);
 
-@FeignClient(name="Concert", url="http://localhost:8081")
-public interface ConcertService {
-
-    @RequestMapping(method= RequestMethod.GET, path="/checkAndBookStock")
-    public boolean checkAndBookStock(@RequestParam("ccId") Long ccId , @RequestParam("qty") int qty);
-
-}
+	}
 ```
 
-Booking 서비스 내 Req/Resp
+설문이 제출되면(@PostUpdate) 설문 완료 처리가 되도록 처리
+```
+# (Order) Order.java
 
-```java
-    @PostPersist
-    public void onPostPersist() throws Exception{
-        
-        
-        boolean rslt = BookingApplication.applicationContext.getBean(concertbooking.external.ConcertService.class)
-            .checkAndBookStock(this.getCcId(), this.getQty());
+    @PostUpdate
+    public void onPostUpdate(){
+        /* 설문조사 */
+    	System.out.println("### 설문 상태 Update and Update Event raised..." + this.getStatus());
+        if(this.getStatus().equals("surveySubmit")) {
+            SurveySubmitted surveySubmitted = new SurveySubmitted();
+            BeanUtils.copyProperties(this, surveySubmitted);
+            surveySubmitted.publishAfterCommit();
 
-            if (rslt) {
-                Booked booked = new Booked();
-                BeanUtils.copyProperties(this, booked);
-                booked.publishAfterCommit();
-            }  
-            else{
-                throw new Exception("Out of Stock Exception Raised.");
-            }      
-        
+            purifierrentalpjt.external.Management management = new purifierrentalpjt.external.Management();
+
+            management.setId(this.getId());
+
+            OrderApplication.applicationContext.getBean(purifierrentalpjt.external.ManagementService.class)
+            .completeSurvey(management);
+        }
+
 
     }
+   
 ```
 
-Concert 서비스 내 Booking 서비스 Feign Client 요청 대상
-
-```java
-@RestController
-public class ConcertController {
-
-@Autowired
-ConcertRepository concertRepository;
-
-@RequestMapping(value = "/checkAndBookStock",
-        method = RequestMethod.GET,
-        produces = "application/json;charset=UTF-8")
-
-public boolean checkAndBookStock(HttpServletRequest request, HttpServletResponse response)
-        throws Exception {
-     
-        System.out.println("##### /concert/checkAndBookStock  called #####");
-
-        boolean status = false;
-        
-        Long ccId = Long.valueOf(request.getParameter("ccId"));
-        int qty = Integer.parseInt(request.getParameter("qty"));
-
-        System.out.println("##### ccid #####" + ccId +"##### qty" + qty);
-        Optional<Concert> concert = concertRepository.findById(ccId);
-        
-        if(concert.isPresent()){
-
-                Concert concertValue = concert.get();
-
-                if (concertValue.getStock() >= qty) {
-                        concertValue.setStock(concertValue.getStock() - qty);
-                        concertRepository.save(concertValue);
-                        status = true;
-                        System.out.println("##### /concert/checkAndBookStock  qty check true ##### stock"+concertValue.getStock()+"### qty"+ qty);
-                }
-
-                System.out.println("##### /concert/checkAndBookStock  qty check false ##### stock"+concertValue.getStock()+"### qty"+ qty);
-        }
-
-        return status;
-        }
-        
- }
-```
-
-공연 정보를 등록함
-
-![concert](https://user-images.githubusercontent.com/85874443/122849383-61634800-d346-11eb-8d6d-73c09867dc17.PNG)
-
-
-
-티켓을 예매함
-![booking](https://user-images.githubusercontent.com/85874443/122849272-252fe780-d346-11eb-8ee5-51469a470115.PNG)
-
-
-티켓 예매를 취소함
-![cancle](https://user-images.githubusercontent.com/85874443/122849246-1a755280-d346-11eb-9455-e7a4de36cf12.PNG)
+동기식 호출에서는 호출 시간에 따른 타입 커플링이 발생하며, 관리(Management) 서비스가 장애가 나면 설문이 제출되지 않는다는 것을 확인
+![동기호출](https://user-images.githubusercontent.com/81946287/120578039-2022fb00-c460-11eb-8156-dc6aaed13bf4.png)
 
 
 # 운영
