@@ -309,8 +309,7 @@ server:
 - 정보저장
 ![image](https://user-images.githubusercontent.com/84304047/125000391-376e8d00-e08b-11eb-872a-5ebdf85b6fbc.png)
 - 카프카 메시지
-
-![_kafka](https://user-images.githubusercontent.com/81946287/120587906-2ff70b00-c471-11eb-92ac-274ea581b944.png)
+![image](https://user-images.githubusercontent.com/84304047/125001161-f5dee180-e08c-11eb-9bae-5e26d4f7b316.png)
 
 
 - 뷰테이블 수신처리(카프카 메세지를 받아서 처리)
