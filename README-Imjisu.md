@@ -395,6 +395,7 @@ saveInfo 를 불러 infoComplted에서 받아 Order 로 넘어가는 처리(req/
 ## Deploy/Pipeline
 각 구현체들은 각자의 source repository 에 구성되었고, 각 서비스별로 빌드를 하여, aws ecr에 등록 후 deployment.yaml 통해 EKS에 배포함.
 
+
 - git에서 소스 가져오기
 
 ```
@@ -513,7 +514,7 @@ $ kubectl autoscale deploy management --min=1 --max=3 --cpu-percent=20
 ```
 ![image](https://user-images.githubusercontent.com/84304047/124897755-90054200-e019-11eb-8d12-92c0b85f4a34.png)
 
-- CB 에서 했던 방식대로 워크로드를 걸어준다.
+- 워크로드를 걸어준다.
 
 ```sh
 siege -c20 -t30S  -v 'http://a8adb379917dd4dfbba87d392f0a1325-2035623173.eu-west-3.elb.amazonaws.com:8080/order/joinOrder POST productId=4&productName=PURI4&installationAddress=Dongtan&customerId=504'
