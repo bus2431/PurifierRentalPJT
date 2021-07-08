@@ -211,8 +211,8 @@ public class Management {
 
 - (a) http -f POST  http://localhost:8081/order/joinOrder productId=1 productName=PURI1 installationAddress="Addr1" customerId=101
 - (b) http -f PATCH http://localhost:8083/installations orderId=1 
-- (c) http -f PATCH http://localhost:8081/order/submitSurvey orderId=1 surveyResult="GOOD"
-![Survey_command](https://user-images.githubusercontent.com/81946287/120572864-a7b83c00-c457-11eb-8254-6237c680da5e.png)
+- (c) http -f PATCH http://localhost:8081/order/saveInfo orderId=1 surveyResult="GOOD"
+![image](https://user-images.githubusercontent.com/84304047/125000575-a8ae4000-e08b-11eb-8d63-92add67315a1.png)
 
 
 
