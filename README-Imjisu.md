@@ -410,34 +410,29 @@ git clone --recurse-submodules https://github.com/skteam4/concert/concertbooking
 - Build 하기
 
 ```bash
-cd /alarm
-cd gateway
-mvn package
+cd Order
+mvn package -B;
 
 cd ..
-cd booking
-mvn package
+cd Installation
+mvn package -B;
 
 cd ..
 cd concert
-mvn package
+mvn package -B;
 
 cd ..
-cd delivery
-mvn package
+cd Assignment
+mvn package -B;
 
 cd ..
-cd payment
-mvn package
+cd Management
+mvn package -B;
 ```
 
 - aws 이미지 캡처
-
-<img width="705" alt="aws_repository" src="https://user-images.githubusercontent.com/85874443/122850409-1f3b0600-d348-11eb-8ebd-e3653bafe919.PNG">
-
-
-<img width="682" alt="aws_book_tag" src="https://user-images.githubusercontent.com/85874443/122850413-2235f680-d348-11eb-807f-b2aef08c24ff.PNG">
-
+![image](https://user-images.githubusercontent.com/84304047/124860814-5c142780-dfed-11eb-8b55-a5614ef099f7.png)
+![image](https://user-images.githubusercontent.com/84304047/124860882-79e18c80-dfed-11eb-9348-5560c7180959.png)
 
 - concert/booking/kubernetes/deployment.yml 파일 
 
