@@ -136,7 +136,8 @@
 
 
 # 구현:
-분석/설계 단계에서 도출된 헥사고날 아키텍처에 따라, 각 BC별로 대변되는 마이크로 서비스들을 스프링부트로 구현하였다. 구현한 각 서비스를 로컬에서 실행하는 방법은 아래와 같다 (각자의 포트넘버는 8081 ~ 8084 이다)
+분석/설계 단계에서 도출된 헥사고날 아키텍처에 따라, 마이크로 서비스들을 스프링부트로 구현하였다. 
+구현한 각 서비스를 로컬에서 실행하는 방법은 아래와 같다 (각자의 포트넘버는 8081 ~ 8084 이다)
 
 ```
 - Local
@@ -327,7 +328,7 @@ server:
 
   
 ## 폴리글랏 퍼시스턴스
-concert 서비스의 DB 를 HSQL 로 설정하여 MSA간 서로 다른 종류의 DB간에도 문제 없이 동작하여 다형성을 만족하는지 확인하였다.
+Management서비스의 DB 를 HSQL 로 설정하여 MSA간 서로 다른 종류의 DB간에도 문제 없이 동작하여 다형성을 만족하는지 확인하였다.
 
 |서비스|DB|pom.xml|
 | :--: | :--: | :--: |
@@ -438,22 +439,22 @@ mvn package -B;
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: order
+  name: management
   labels:
-    app: order
+    app: management
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: order
+      app: management
   template:
     metadata:
       labels:
-        app: order
+        app: management
     spec:
       containers:
         - name: order
-          image: XXXXXX.dkr.ecr.ca-central-1.amazonaws.com/user19-order:v1
+          image: XXXXXX.dkr.ecr.eu-west-3.amazonaws.com/user19-management:v1
           ports:
             - containerPort: 8080
           readinessProbe:
