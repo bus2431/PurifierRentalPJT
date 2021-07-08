@@ -431,31 +431,31 @@ mvn package -B;
 ```
 
 - aws 이미지 캡처
-![image](https://user-images.githubusercontent.com/84304047/124860814-5c142780-dfed-11eb-8b55-a5614ef099f7.png)
-![image](https://user-images.githubusercontent.com/84304047/124860882-79e18c80-dfed-11eb-9348-5560c7180959.png)
+![image](https://user-images.githubusercontent.com/84304047/124861576-d1ccc300-dfee-11eb-9c64-770618d9542b.png)
+![image](https://user-images.githubusercontent.com/84304047/124861602-db562b00-dfee-11eb-88ec-038c9db3e9d2.png)
 
-- concert/booking/kubernetes/deployment.yml 파일 
+- PurifierRentalPJT/Management/kubernetes/deployment.yml 파일 
 
-```yml
+```
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: booking
+  name: order
   labels:
-    app: booking
+    app: order
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: booking
+      app: order
   template:
     metadata:
       labels:
-        app: booking
+        app: order
     spec:
       containers:
-        - name: booking
-          image: xxxxxx.dkr.ecr.ca-central-1.amazonaws.com/booking:v4
+        - name: order
+          image: XXXXXX.dkr.ecr.ca-central-1.amazonaws.com/user19-order:v1
           ports:
             - containerPort: 8080
           readinessProbe:
@@ -467,6 +467,24 @@ spec:
             periodSeconds: 5
             failureThreshold: 10
           livenessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 120
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 5
+          env:
+          - name: INIT_NAME
+            valueFrom:
+              secretKeyRef:
+                name: order
+                key: username
+          - name: INIT_PW
+            valueFrom:
+              secretKeyRef:
+                name: order
+                key: password
 ```	  
 
 
