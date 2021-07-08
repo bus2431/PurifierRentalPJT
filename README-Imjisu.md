@@ -6,7 +6,7 @@
 
 # Table of contents
 
-- [AirpirifierRentalProject (공기청정기렌탈 신청 서비스)](#---)
+- [PurifierRentalProject (공기청정기렌탈 신청 서비스)](#---)
   - [서비스 시나리오](#서비스-시나리오)
   - [체크포인트](#체크포인트)
   - [분석/설계](#분석설계)
@@ -99,7 +99,7 @@
     - Scaling-out: Message Consumer 마이크로서비스의 Replica 를 추가했을때 중복없이 이벤트를 수신할 수 있는가
     - CQRS: Materialized View 를 구현하여, 타 마이크로서비스의 데이터 원본에 접근없이(Composite 서비스나 조인SQL 등 없이) 도 내 서비스의 화면 구성과 잦은 조회가 가능한가?
 
-  - 폴리글랏 플로그래밍
+  - 폴리글랏 로그래밍
     - 각 마이크로 서비스들이 하나이상의 각자의 기술 Stack 으로 구성되었는가?
     - 각 마이크로 서비스들이 각자의 저장소 구조를 자율적으로 채택하고 각자의 저장소 유형 (RDB, NoSQL, File System 등)을 선택하여 구현하였는가?
   - API 게이트웨이
@@ -163,7 +163,7 @@
 - Management(고객관리) 마이크로서비스 예시
 
 ```
-package airpurifierrentalpjt;
+package purifierrentalpjt;
 
 import javax.persistence.*;
 import org.springframework.beans.BeanUtils;
@@ -222,11 +222,14 @@ public class Management {
 
 
 
-## Gateway 적용 현행화 필요
+## Gateway 적용
 API Gateway를 통하여, 마이크로 서비스들의 진입점을 통일한다.
 
 ```
-# application.yml 파일에 라우팅 경로 설정
+server:
+  port: 8088
+
+---
 
 spring:
   profiles: default
@@ -260,6 +263,41 @@ spring:
               - "*"
             allowCredentials: true
 
+
+---
+
+spring:
+  profiles: docker
+  cloud:
+    gateway:
+      routes:
+        - id: order
+          uri: http://order:8080
+          predicates:
+            - Path=/order/**,/orders/**,/orderStatuses/**
+        - id: assignment
+          uri: http://assignment:8080
+          predicates:
+            - Path=/assignment/**,/assignments/** 
+        - id: installation
+          uri: http://installation:8080
+          predicates:
+            - Path=/installation/**,/installations/**
+        - id: management
+          uri: http://management:8080
+          predicates:
+            - Path=/management/**,/managements/** 
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "*"
+            allowedMethods:
+              - "*"
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+
 server:
   port: 8080
 ```
@@ -270,7 +308,7 @@ server:
 
 ## CQRS
 Materialized View 를 구현하여, 타 마이크로서비스의 데이터 원본에 접근없이(Composite 서비스나 조인SQL 등 없이) 도 내 서비스의 화면 구성과 잦은 조회가 가능하게 구현해 두었다.
-본 프로젝트에서 Mypage 역할은 view 서비스가 수행한다.
+본 프로젝트에서  역할은 view 서비스가 수행한다.
 
 모든 정보는 비동기 방식으로 발행된 이벤트(예매, 예매 취소)를 수신하여 처리된다.
 
