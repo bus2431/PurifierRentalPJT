@@ -585,12 +585,11 @@ livenessProbe:
 
 - port 및 path 잘못된 값으로 변경 후, retry 시도 확인 
     - order 에 있는 deployment.yml 수정  
-        ![image](https://user-images.githubusercontent.com/84304047/124911427-b3cf8480-e027-11eb-80ad-462ec562dee5.png)
+      ![image](https://user-images.githubusercontent.com/84304047/124913334-f7c38900-e029-11eb-8975-427ce3ee9b12.png)
 
 
     - retry 시도 확인 실패
-       ![image](https://user-images.githubusercontent.com/84304047/124912174-9949db00-e028-11eb-92b5-6de7c99ae9dc.png)
-
+       ![image](https://user-images.githubusercontent.com/84304047/124913284-ea0e0380-e029-11eb-83ed-87b9652f7579.png)
 
 
 
