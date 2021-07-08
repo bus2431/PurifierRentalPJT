@@ -128,12 +128,12 @@
 
     
 ### (개인과제) Management 서비스 추가된 모형
-![image](https://user-images.githubusercontent.com/84304047/124766408-dacb7f00-df71-11eb-8101-a3d02053ef51.png)
+![image](https://user-images.githubusercontent.com/84304047/124922840-dc11b000-e034-11eb-85a4-b116e2d6742a.png)
 
 
 ### 서비스 추가된 완성본에 대한 기능적/비기능적 요구사항을 커버하는지 검증
 #### 시나리오 Coverage Check
-![image](https://user-images.githubusercontent.com/84304047/124768850-f899e380-df73-11eb-8c8e-0443474bba34.png)
+![image](https://user-images.githubusercontent.com/84304047/124923080-1418f300-e035-11eb-8006-405979ca53e2.png)
 
 
 # 구현:
