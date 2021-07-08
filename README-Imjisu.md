@@ -524,7 +524,7 @@ spec:
               cpu: 500m
             requests:
               cpu: 200m
-          image: 879772956301.dkr.ecr.ap-southeast-1.amazonaws.com/puri12-order:v1
+          image: 879772956301.dkr.ecr.eu-east-3.amazonaws.com/user19-order:v1
           ports:
             - containerPort: 8080
 ```
