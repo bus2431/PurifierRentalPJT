@@ -207,18 +207,12 @@ public class Management {
 ```
 
 적용 후 REST API의 테스트
-1) 공기청정기 렌탈 서비스 가입완료 후 설문조사 처리
+공기청정기 렌탈 서비스 가입완료 후 고객정보 처리
 
 - (a) http -f POST  http://localhost:8081/order/joinOrder productId=1 productName=PURI1 installationAddress="Addr1" customerId=101
 - (b) http -f PATCH http://localhost:8083/installations orderId=1 
 - (c) http -f PATCH http://localhost:8081/order/submitSurvey orderId=1 surveyResult="GOOD"
 ![Survey_command](https://user-images.githubusercontent.com/81946287/120572864-a7b83c00-c457-11eb-8254-6237c680da5e.png)
-
-2) 카프카 메시지 확인
-
-- (a) 설문조사 제출 후 : surveySubmit
-![Survey_kafka](https://user-images.githubusercontent.com/81946287/120572892-b56dc180-c457-11eb-990f-49f8578e9994.png)
-
 
 
 
@@ -307,21 +301,21 @@ server:
 
 
 ## CQRS
-가입신청+설문진행 상태 조회를 위한 서비스를 CQRS 패턴으로 구현하였다.
+가입신청+정보저장 상태 조회를 위한 서비스를 CQRS 패턴으로 구현하였다.
 - Order, Assignment, Installation, Management 개별 aggregate 통합 조회로 인한 성능 저하를 막을 수 있다.
 - 모든 정보는 비동기 방식으로 발행된 이벤트를 수신하여 처리된다.
 - 설계 : MSAEz 설계의 view 매핑 설정 참조
 
-- 설문 제출
+- 정보저장
 
-![설문](https://user-images.githubusercontent.com/81946287/120587902-2d94b100-c471-11eb-9647-4a27811fdccb.png)
+![정보저장](https://user-images.githubusercontent.com/81946287/120587902-2d94b100-c471-11eb-9647-4a27811fdccb.png)
 
 - 카프카 메시지
 
-![설문_kafka](https://user-images.githubusercontent.com/81946287/120587906-2ff70b00-c471-11eb-92ac-274ea581b944.png)
+![_kafka](https://user-images.githubusercontent.com/81946287/120587906-2ff70b00-c471-11eb-92ac-274ea581b944.png)
 
 
-- 뷰테이블 수신처리
+- 뷰테이블 수신처리(카프카 메세지를 받아서 처리)
 
 ![ViewHandler](https://user-images.githubusercontent.com/81946287/120587912-32596500-c471-11eb-8f64-1ee819ddfc25.png)
 
@@ -339,11 +333,11 @@ Management서비스의 DB 를 HSQL 로 설정하여 MSA간 서로 다른 종류�
 
 
 ## 동기식 호출과 Fallback 처리
-- 분석 단계에서의 조건 중 하나로 주문(Order) 서비스에서 설문 제출 요청 받으면, 
-관리(management) 서비스 설문종료 처리하는 부분을 동기식 호출하는 트랜잭션으로 처리하기로 하였다. 
+- 분석 단계에서의 조건 중 하나로 주문(Order) 서비스에서 정보처리시, 
+관리(management) 서비스 정보 처리하는 부분을 동기식 호출하는 트랜잭션으로 처리하기로 하였다. 
 - 호출 프로토콜은 이미 앞서 Rest Repository 에 의해 노출되어 있는 REST 서비스를 FeignClient 를 이용하여 호출하도록 한다.
 
-관리 서비스를 호출하기 위하여 Stub과 (FeignClient) 를 이용하여 Service 대행 인터페이스 (Proxy) 를 구현
+saveInfo 를 불러 infoComplted에서 받아 Order 로 넘어가는 처리(req/res)
 ```
 # (Order) ManagementService.java
 
@@ -361,19 +355,19 @@ Management서비스의 DB 를 HSQL 로 설정하여 MSA간 서로 다른 종류�
 	public interface ManagementService {
 
     		@RequestMapping(method= RequestMethod.POST, path="/managements")
-   		 public void completeSurvey(@RequestBody Management management);
+   		 public void saveInfo(@RequestBody Management management);
 
 	}
 ```
 
-설문이 제출되면(@PostUpdate) 설문 완료 처리가 되도록 처리
+정보 저장이 되면(@PostUpdate) 정보 처리가 되도록 처리
 ```
 # (Order) Order.java
 
     @PostUpdate
     public void onPostUpdate(){
-        /* 설문조사 */
-    	System.out.println("### 설문 상태 Update and Update Event raised..." + this.getStatus());
+        /* 정보처리 */
+    	System.out.println("### 정보저장 Update and Update Event raised..." + this.getStatus());
         if(this.getStatus().equals("surveySubmit")) {
             SurveySubmitted surveySubmitted = new SurveySubmitted();
             BeanUtils.copyProperties(this, surveySubmitted);
@@ -392,7 +386,7 @@ Management서비스의 DB 를 HSQL 로 설정하여 MSA간 서로 다른 종류�
    
 ```
 
-동기식 호출에서는 호출 시간에 따른 타입 커플링이 발생하며, 관리(Management) 서비스가 장애가 나면 설문이 제출되지 않는다는 것을 확인
+동기식 호출에서는 호출 시간에 따른 타입 커플링이 발생하며, 관리(Management) 서비스가 장애가 나면 정보처리가 되지 않는다는 것을 확인
 ![동기호출](https://user-images.githubusercontent.com/81946287/120578039-2022fb00-c460-11eb-8156-dc6aaed13bf4.png)
 
 
