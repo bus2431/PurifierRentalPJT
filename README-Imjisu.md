@@ -501,7 +501,7 @@ kubectl get deployment metrics-server -n kube-system
 
 - 예약 서비스에 리소스에 대한 사용량을 정의한다.
 
-<code>booking/kubernetes/deployment.yml</code>
+<code>Management/kubernetes/deployment.yml</code>
 
 ```yml
   resources:
@@ -513,78 +513,32 @@ kubectl get deployment metrics-server -n kube-system
       cpu: "500m"
 ```
 
-- 예약 서비스에 대한 replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 20프로를 넘어서면 replica 를 3개까지 늘려준다:
+- 주문서비스에 대한 replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 20프로를 넘어서면 replica 를 3개까지 늘려준다:
 
 ```sh
-$ kubectl autoscale deploy booking --min=1 --max=3 --cpu-percent=20
+$ kubectl autoscale deploy management --min=1 --max=3 --cpu-percent=20
 ```
+![image](https://user-images.githubusercontent.com/84304047/124897755-90054200-e019-11eb-8d12-92c0b85f4a34.png)
 
 - CB 에서 했던 방식대로 워크로드를 걸어준다.
 
 ```sh
-siege -c20 -t40S -v --content-type "application/json" 'http://localhost:8082/bookings POST {“ccId”:"1", "ccName":"mong", "ccDate:"20210621", “qty”:”2" ,”customerId”:"6007" , "bookingStatus":"success"}'
+siege -c20 -t30S  -v 'http://a8adb379917dd4dfbba87d392f0a1325-2035623173.eu-west-3.elb.amazonaws.com:8080/order/joinOrder POST productId=4&productName=PURI4&installationAddress=Dongtan&customerId=504'
 ```
 
 - 오토스케일이 어떻게 되고 있는지 모니터링을 걸어둔다:
 
 ```sh
-$ kubectl get deploy booking -w
+$ kubectl get deploy order -w
 ```
 
-- 어느정도 시간이 흐른 후 스케일 아웃이 벌어지는 것을 확인할 수 있다:
+- 어느정도 시간이 흐른 후 스케일 아웃이 벌어지는 것을 확인하였다:
 
 * siege 부하테스트 - 후 1
 
-![hpa](https://user-images.githubusercontent.com/85874443/122758180-76eb5a00-d2d3-11eb-9618-e2005145b0de.PNG)
+![image](https://user-images.githubusercontent.com/84304047/124901670-2c7d1380-e01d-11eb-9490-9c82693912b5.png)
 
 
-* siege 부하테스트 - 후 2
-
-
-![scaleout_최종](https://user-images.githubusercontent.com/85874443/122758323-a13d1780-d2d3-11eb-8687-fc39ef7008a5.PNG)
-
-
-## Circuit Breaker
-
-  * 서킷 브레이킹 프레임워크의 선택: Spring FeignClient + Hystrix 설치
-  * 시나리오는 예약(booking) >> 콘서트(concert) 연결을 RESTful Request/Response 로 연동하여 구현이 되어있고, 예약 요청이 과도할 경우 CB 를 통하여 장애격리
-  * Booking 서비스 내 XX에 FeignClient 에 적용
-  * Hystrix 설정
-
-```yml
-# application.yml
-
-feign:
-  hystrix:
-    enabled: true
-
-hystrix:
-  command:
-    default:
-      execution.isolation.thread.timeoutInMilliseconds: 610
-```
-
-- 부하 테스트 수행
-```sh
-$ siege -c20 -t40S -v --content-type "application/json" 'http://localhost:8082/bookings POST {"ccId":1, "ccName":"mong", "ccDate":"20210621", "qty":2 ,"customerId":6007 ,"bookingStatus":"success"}'
-```
-
-- fallback 설정
-
-![fallback설정](https://user-images.githubusercontent.com/85874443/122866266-9d0c0b00-d362-11eb-92ca-43179c843e30.PNG)
-![fallback함수](https://user-images.githubusercontent.com/85874443/122866315-b4e38f00-d362-11eb-8437-dd24f46977eb.PNG)
-
-
-- Hystrix 설정 + fallback 설정 전
-
-  ![Hystrix설정후_fallback설정전](https://user-images.githubusercontent.com/85874443/122845849-899b7880-d33f-11eb-8f9b-e266db0afde1.PNG)
-
-  
-- Hystrix 설정 + fallback 설정 후
-
-  ![Hystrix설정전_fallback설정후](https://user-images.githubusercontent.com/85874443/122845630-172a9880-d33f-11eb-9aec-5592f9a56ee3.PNG)
-
-- 부하를 줬을 때 fallback 설정 전에는 500 에러가 발생했으나, fallback 설정 이후에는 100% 정상적으로 처리함
 
 ***
 
@@ -610,10 +564,11 @@ readinessProbe:
 
 - readiness 적용 전. Order이 배포되는 중  
 ![image](https://user-images.githubusercontent.com/84304047/124864926-b9f83d80-dff4-11eb-9ace-ae6f425fe55b.png)
+![image](https://user-images.githubusercontent.com/84304047/124903380-de690f80-e01e-11eb-8d4a-2372c0ec6a8f.png)
 
 
 - 다시 readiness 정상 적용 후, Availability 100% 확인  
-![image](https://user-images.githubusercontent.com/84304047/124864954-c2e90f00-dff4-11eb-9bd8-7e23ab75a8e3.png)
+![image](https://user-images.githubusercontent.com/84304047/124901842-57fffe00-e01d-11eb-8bb9-ffdf39c74682.png)
 
     
 ## Self-healing (Liveness Probe)
