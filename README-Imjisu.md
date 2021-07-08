@@ -564,8 +564,6 @@ readinessProbe:
 
 - readiness 적용 전. Order이 배포되는 중  
 ![image](https://user-images.githubusercontent.com/84304047/124864926-b9f83d80-dff4-11eb-9ace-ae6f425fe55b.png)
-![image](https://user-images.githubusercontent.com/84304047/124903380-de690f80-e01e-11eb-8d4a-2372c0ec6a8f.png)
-
 
 - 다시 readiness 정상 적용 후, Availability 100% 확인  
 ![image](https://user-images.githubusercontent.com/84304047/124901842-57fffe00-e01d-11eb-8bb9-ffdf39c74682.png)
