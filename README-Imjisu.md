@@ -564,7 +564,7 @@ readinessProbe:
 ```
 
 - deployment.yml에서 readiness 설정 제거 후, 배포중 siege 테스트 진행
-- kubectl delete deploy --all
+- kubectl delete deploy 
 - kubectl apply -f deployment.yml
 - kubectl apply -f service.yaml
 
