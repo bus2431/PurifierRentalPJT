@@ -21,7 +21,6 @@
     - [Autoscale(HPA)](#Autoscale)
     - [Zero-Downtime deploy(Readiness Probe)](#Zero-Downtime-deploy(Readiness-Probe))
     - [Self-healing(Liveness Probe)](#Self-healing)
-  - [신규 개발 조직의 추가](#신규-개발-조직의-추가)
 
 # 서비스 시나리오
 
@@ -595,7 +594,7 @@ livenessProbe:
 
 - port 및 path 잘못된 값으로 변경 후, retry 시도 확인 
     - order 에 있는 deployment.yml 수정  
-      ![image](https://user-images.githubusercontent.com/84304047/124913334-f7c38900-e029-11eb-8975-427ce3ee9b12.png)
+![image](https://user-images.githubusercontent.com/84304047/124913334-f7c38900-e029-11eb-8975-427ce3ee9b12.png)
 
 
     - retry 시도 확인 
